@@ -1,26 +1,73 @@
 @import "tailwindcss";
+@source "..";
 
 :root {
-  --background: #ffffff;
+  --background: #faf7f2;
   --foreground: #171717;
+  --ivory: #faf6ee;
+  --gold: #c59b27;
+  --gold-dark: #8c671a;
+  --champagne: #e9e0db;
+  --peach-highlight: #f7dfc2;
+  --font-poppins: "Poppins", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-cormorant: "Cormorant Garamond", Georgia, Cambria, "Times New Roman",
+    Times, serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ivory: var(--ivory);
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-champagne: var(--champagne);
+  --color-peach-highlight: var(--peach-highlight);
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Swashaa-style half-height warm peach/champagne underline behind key serif phrases */
+.swashaa-highlight {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.swashaa-highlight::after {
+  content: "";
+  position: absolute;
+  left: -0.06em;
+  right: -0.06em;
+  bottom: 0.08em;
+  height: 0.42em;
+  background-color: var(--peach-highlight);
+  z-index: -1;
+  border-radius: 2px;
+}
+
+@keyframes shiqueen-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: shiqueen-marquee 58s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
