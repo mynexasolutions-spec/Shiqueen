@@ -215,11 +215,11 @@ export default function Header() {
 
       {/* 2. Sticky Main Navigation Header */}
       <header className="sticky top-0 z-50 border-b border-[#DFC99B] bg-[#FAF6EE]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-6 xl:px-8 2xl:px-20">
+        <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-6 xl:px-8 2xl:px-12">
           {/* Brand Logo Lockup (Left on mobile, left on desktop) */}
           <Link
             href="/"
-            className="group flex items-center gap-3 focus:outline-none"
+            className="group flex shrink-0 items-center gap-3 focus:outline-none"
             aria-label="Shiqueen Home"
           >
             <div
@@ -236,25 +236,25 @@ export default function Header() {
               />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-serif text-lg font-bold tracking-[0.14em] text-[#171717] whitespace-nowrap sm:text-xl 2xl:text-[26px]">
+              <span className="font-serif text-lg font-bold tracking-[0.14em] text-[#171717] whitespace-nowrap sm:text-xl 2xl:text-2xl">
                 {BRAND.name}
               </span>
-              <span className="mt-1 text-[8.5px] font-semibold uppercase tracking-[0.14em] text-[#8C671A] whitespace-nowrap sm:text-[9px] 2xl:text-xs 2xl:tracking-[0.2em] 2xl:font-bold 2xl:text-[#6E4F10]">
+              <span className="mt-1 text-[8.5px] font-semibold uppercase tracking-[0.14em] text-[#8C671A] whitespace-nowrap sm:text-[9px] 2xl:text-[10.5px] 2xl:tracking-[0.18em] 2xl:font-bold 2xl:text-[#6E4F10]">
                 {BRAND.tagline}
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation (Equally Spaced + Smart Widescreen Font Scaling) */}
+          {/* Desktop Navigation (Guaranteed Minimum Gap + Even Distribution across all screen widths) */}
           <nav
             aria-label="Primary Navigation"
-            className="hidden flex-1 items-center justify-evenly pl-4 lg:flex xl:pl-6 2xl:pl-16"
+            className="hidden flex-1 items-center justify-evenly gap-4 px-2 lg:flex xl:gap-6 2xl:gap-8"
           >
             {/* Hover / Focus Dropdown for Anti-Tarnish Jewelry */}
             <div className="group relative py-2">
               <a
                 href="#categories"
-                className="inline-flex items-center gap-1 whitespace-nowrap text-[13.5px] font-medium tracking-wide text-[#171717] transition-colors hover:text-[#8C671A] xl:text-[14px] 2xl:text-[17px] 2xl:font-semibold 2xl:text-[#111111]"
+                className="inline-flex items-center gap-1 whitespace-nowrap text-[13.5px] font-medium tracking-wide text-[#171717] transition-colors hover:text-[#8C671A] xl:text-[14px] 2xl:text-[15px] 2xl:font-semibold 2xl:text-[#111111]"
               >
                 <span>Anti-Tarnish Jewelry</span>
                 <svg
@@ -300,13 +300,8 @@ export default function Header() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="relative whitespace-nowrap py-2 text-[13.5px] font-medium tracking-wide text-[#171717] transition-colors hover:text-[#8C671A] xl:text-[14px] 2xl:text-[17px] 2xl:font-semibold 2xl:text-[#111111] after:absolute after:bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-[#C59B27] after:transition-all after:duration-200 hover:after:w-full"
+                className="relative whitespace-nowrap py-2 text-[13.5px] font-medium tracking-wide text-[#171717] transition-colors hover:text-[#8C671A] xl:text-[14px] 2xl:text-[15px] 2xl:font-semibold 2xl:text-[#111111] after:absolute after:bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-[#C59B27] after:transition-all after:duration-200 hover:after:w-full"
               >
-                {item.widescreenPrefix && (
-                  <span className="hidden 2xl:inline">
-                    {item.widescreenPrefix}
-                  </span>
-                )}
                 {item.label}
               </Link>
             ))}
