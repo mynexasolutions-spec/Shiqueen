@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SHIQUEEN — storefront + admin dashboard
 
-## Getting Started
+Next.js 16 (Cache Components) · Supabase Postgres · ImageKit · Brevo.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.example .env          # fill in the values
+npm run db:migrate            # creates/updates tables (safe to re-run)
+npm run db:seed               # loads the starter catalogue, coupons and settings
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create or reset an admin account (the password is never stored in the repo):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='StrongPass123' npm run db:seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## What's where
 
-## Learn More
+| Area | URL | Who |
+| --- | --- | --- |
+| Storefront | `/`, `/collections/[slug]`, `/products/[slug]`, `/checkout` | everyone |
+| Sign in / sign up / reset | `/login`, `/signup`, `/forgot-password` | everyone |
+| Customer dashboard | `/account` (orders, addresses, profile & password) | signed-in customers |
+| Admin dashboard | `/admin` (orders, products, categories, customers, reviews, coupons & offers, storefront content, pages, settings) | admins only |
+| Information pages | `/pages/[slug]` (shipping, returns, privacy…) | everyone (published pages only) |
 
-To learn more about Next.js, take a look at the following resources:
+### Managing the store (no code needed)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Storefront** (`/admin/storefront`): brand & contact (logo, WhatsApp number, socials), announcement bar, menu,
+  homepage banner slides, homepage sections, gifting studio, product-page text & finishes, shopping bag, footer.
+  Content lives in the `settings` table as `content.*` rows; defaults are in `lib/content/defaults.ts`.
+- **Settings**: payment methods (online / COD on-off, labels, extra charges, discounts, COD limit, payment
+  instructions), shipping, gift wrap, review rules.
+- **Reviews**: customers write reviews when signed in; approve, hide, reply, or feature them on the homepage.
+- **Coupons & offers**: tick “Show as offer” to display a coupon as an offer card on product pages.
+- **Pages**: policy pages (seeded as drafts — review and publish). Footer links to drafts are hidden automatically.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Auth**: one login for everyone; the role decides where you land. New accounts verify their
+  email with a 6-digit code. Sign in with password **or** a one-time email code. Sessions are
+  random tokens in an httpOnly cookie, stored hashed in the `sessions` table.
+- **Images**: admins upload through upload boxes; the browser sends files straight to ImageKit
+  using a short-lived signature from `app/admin/_actions/upload.ts` (the private key never
+  leaves the server).
+- **Data**: all reads/writes happen on the server through `DATABASE_URL`. Every table has Row
+  Level Security enabled with no policies, so Supabase's public API can't read them.
+- **Prices**: checkout totals, coupons and stock are always recalculated on the server
+  (`lib/server/pricing.ts`); the browser's numbers are display only.
+- **Caching**: the storefront catalogue is cached (`lib/server/catalog.ts`) and refreshed
+  instantly by admin changes via `refreshStorefront()`.
 
-## Deploy on Vercel
+## Key folders
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/(auth)` — sign-in/up pages and auth Server Actions
+- `app/admin` — admin pages; `app/admin/_actions` — admin Server Actions (each checks `requireAdmin()`)
+- `app/account` — customer dashboard
+- `lib/server` — database, sessions, OTP, email, ImageKit, catalogue and admin data access
+- `db/schema.sql` — database schema; `scripts/` — migrate & seed

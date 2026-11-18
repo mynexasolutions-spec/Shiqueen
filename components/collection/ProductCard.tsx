@@ -8,15 +8,18 @@ import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   product: CatalogProduct;
+  /** Load immediately (first row of a grid — likely the largest image on screen). */
+  eager?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, eager = false }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
   const { addItem } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!product.inStock) return;
     addItem(
       {
         id: product.id,
@@ -45,6 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           src={product.primaryImage}
           alt={product.name}
           fill
+          loading={eager ? "eager" : "lazy"}
           sizes="(min-width: 1536px) 22vw, (min-width: 1024px) 24vw, (min-width: 640px) 33vw, 50vw"
           className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
         />
@@ -73,13 +77,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`shrink-0 rounded-full px-2.5 py-1 font-sans text-[9px] font-semibold uppercase tracking-wider transition-all duration-200 active:scale-95 sm:px-3.5 sm:py-1.5 sm:text-[10.5px] xl:px-4 xl:py-2 xl:text-[11.5px] 2xl:px-4.5 2xl:text-xs ${
+            disabled={!product.inStock}
+            className={`disabled:cursor-not-allowed disabled:!bg-[#171717]/40shrink-0 rounded-full px-2.5 py-1 font-sans text-[9px] font-semibold uppercase tracking-wider transition-all duration-200 active:scale-95 sm:px-3.5 sm:py-1.5 sm:text-[10.5px] xl:px-4 xl:py-2 xl:text-[11.5px] 2xl:px-4.5 2xl:text-xs ${
               isAdded
                 ? "bg-[#107C41] text-white"
                 : "bg-[#111111] text-white hover:bg-[#8C671A]"
             }`}
           >
-            {isAdded ? (
+            {!product.inStock ? (
+              "Sold out"
+            ) : isAdded ? (
               "✓ Added"
             ) : (
               <>

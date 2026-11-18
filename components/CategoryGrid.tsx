@@ -1,10 +1,14 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { VISUAL_CATEGORIES } from "@/lib/brand-data";
+import { getHomeCategories } from "@/lib/server/catalog";
+import { getPublicSite } from "@/lib/server/content";
+import { splitHighlight } from "@/lib/site-types";
 
-export default function CategoryGrid() {
+export default async function CategoryGrid() {
+  const [categories, site] = await Promise.all([getHomeCategories(), getPublicSite()]);
+  if (categories.length === 0) return null;
+  const home = site.content.home;
+  const [before, highlight, after] = splitHighlight(home.categories_title, home.categories_highlight);
   return (
     <section
       id="categories"
@@ -17,24 +21,26 @@ export default function CategoryGrid() {
           <div className="inline-flex items-center gap-2">
             <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
             <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8C671A]">
-              Explore Collections
+              {home.categories_eyebrow}
             </p>
             <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
           </div>
           <h2 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-[#171717] sm:text-4xl lg:text-5xl">
-            Shop By <span className="italic text-[#8C671A]">Category</span>
+            {before}
+            {highlight && <span className="italic text-[#8C671A]">{highlight}</span>}
+            {after}
           </h2>
           <p className="mt-3 text-xs font-medium leading-relaxed text-[#171717]/75 sm:text-sm xl:text-[15px] xl:font-semibold xl:text-[#171717]/85 2xl:text-base">
-            Discover waterproof 18K gold-plated anti-tarnish jewelry, heirloom festive sets, and bespoke luxury gifting creations.
+            {home.categories_text}
           </p>
         </div>
 
-        {/* 8-Item Visual Grid */}
+        {/* Visual category grid (managed in Admin → Categories) */}
         <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 lg:gap-8">
-          {VISUAL_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
-              key={cat.id}
-              href={`/collections/${cat.id}`}
+              key={cat.slug}
+              href={`/collections/${cat.slug}`}
               className="group relative flex flex-col items-center text-center focus:outline-hidden"
             >
               {/* Clean Edge-to-Edge Image Container with Gold Ring & Hover Elevation */}

@@ -1,7 +1,7 @@
 export const BRAND = {
   name: "SHIQUEEN",
   tagline: "Crafted For Every Queen",
-  logoPath: "/images/shiqueen-logo.jpg",
+  logoPath: "/images/shiqueen-logo-2026b.png",
   description:
     "Anti-Tarnish & Artificial Jewelry Retail, Customized Gift Hampers & Jewelry Bouquets with Pan-India Shipping & WhatsApp Order Support.",
 } as const;

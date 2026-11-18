@@ -3,34 +3,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef } from "react";
-import {
-  FEATURED_PRODUCTS,
-  SOCIAL_LINKS,
-  type ProductItem,
-} from "@/lib/brand-data";
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
+import { splitHighlight } from "@/lib/site-types";
+import type { CatalogProduct } from "@/lib/collections-data";
 import { WhatsAppIcon } from "@/components/Header";
 import { useCart } from "@/context/CartContext";
 
-const TABS = [
-  { id: "all", label: "All Creations" },
-  { id: "jewelry", label: "Anti-Tarnish Jewelry" },
-  { id: "watches", label: "Anti-Tarnish Watches" },
-  { id: "festive", label: "Festive & Ethnic Sets" },
-  { id: "gifting", label: "Hampers & Bouquets" },
-] as const;
-
 interface ProductShowcaseProps {
+  products: CatalogProduct[];
+  tabs: { slug: string; name: string }[];
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
 
 export default function ProductShowcase({
+  products,
+  tabs,
   activeTab = "all",
   onTabChange,
 }: ProductShowcaseProps) {
   const [currentTab, setCurrentTab] = useState<string>(activeTab);
   const [addedId, setAddedId] = useState<string | null>(null);
   const { addItem } = useCart();
+  const home = useSite().content.home;
+  const whatsapp = useWhatsApp();
+  const [titleBefore, titleHighlight, titleAfter] = splitHighlight(home.bestsellers_title, home.bestsellers_highlight);
 
   const handleTabClick = (tabId: string) => {
     setCurrentTab(tabId);
@@ -39,21 +36,23 @@ export default function ProductShowcase({
     }
   };
 
+  const TABS = [{ id: "all", label: "All Creations" }, ...tabs.map((t) => ({ id: t.slug, label: t.name }))];
+
   const filteredProducts =
     currentTab === "all"
-      ? FEATURED_PRODUCTS
-      : FEATURED_PRODUCTS.filter((p) => p.category === currentTab);
+      ? products
+      : products.filter((p) => p.collectionSlug === currentTab);
 
-  const handleAddToCart = (product: ProductItem) => {
+  const handleAddToCart = (product: CatalogProduct) => {
     addItem(
       {
         id: product.id,
-        slug: product.id,
+        slug: product.slug,
         name: product.name,
-        image: product.image,
+        image: product.primaryImage,
         price: product.price,
         originalPrice: product.originalPrice,
-        plating: "18K Gold Plated",
+        plating: product.plating,
         quantity: 1,
       },
       true
@@ -75,6 +74,8 @@ export default function ProductShowcase({
     }
   };
 
+  if (products.length === 0) return null;
+
   return (
     <section
       id="bestsellers"
@@ -88,28 +89,28 @@ export default function ProductShowcase({
             <div className="inline-flex items-center gap-2">
               <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
               <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8C671A]">
-                Curated For Every Queen
+                {home.bestsellers_eyebrow}
               </p>
             </div>
             <h2 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-[#171717] sm:text-4xl lg:text-5xl">
-              Trending <span className="italic text-[#8C671A]">Bestsellers</span>
+              {titleBefore}
+              {titleHighlight && <span className="italic text-[#8C671A]">{titleHighlight}</span>}
+              {titleAfter}
             </h2>
             <p className="mt-2 text-xs font-medium leading-relaxed text-[#171717]/75 sm:text-sm xl:text-[15px] xl:font-semibold xl:text-[#171717]/85 2xl:text-base">
-              Hand-picked waterproof daily luxury &amp; tailor-made celebration gifting creations.
+              {home.bestsellers_text}
             </p>
           </div>
 
           {/* WhatsApp Direct Help Concierge */}
           <a
-            href={SOCIAL_LINKS.whatsappUrl(
-              "Hi Shiqueen! I need assistance choosing jewelry/gift hampers from your catalog."
-            )}
+            href={whatsapp(home.bestsellers_whatsapp_message)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-[#8C671A]/40 bg-white px-4 py-2 text-xs font-semibold text-[#171717] shadow-xs transition hover:border-[#8C671A] hover:bg-[#8C671A] hover:text-white"
           >
             <WhatsAppIcon className="h-4 w-4 text-[#8C671A] group-hover:text-white" />
-            <span>Need Custom Advice? Chat on WhatsApp</span>
+            <span>{home.bestsellers_whatsapp_label}</span>
           </a>
         </div>
 
@@ -176,11 +177,11 @@ export default function ProductShowcase({
               >
                 {/* 1. Edge-to-Edge Clean Image linking to Product Detail Page */}
                 <Link
-                  href={`/products/${product.id}`}
+                  href={`/products/${product.slug}`}
                   className="relative aspect-square w-full overflow-hidden bg-[#FAF7F2] lg:aspect-[10/9]"
                 >
                   <Image
-                    src={product.image}
+                    src={product.primaryImage}
                     alt={product.name}
                     fill
                     sizes="(min-width: 1536px) 22vw, (min-width: 1024px) 24vw, (min-width: 640px) 50vw, 50vw"
@@ -191,7 +192,7 @@ export default function ProductShowcase({
                 {/* 2. Ultra-Compact 2-Line White Strip (Zero Truncation, Full Title Visibility) */}
                 <div className="flex flex-col justify-between bg-white px-2 py-1.5 sm:px-3.5 sm:py-3 xl:px-4 xl:py-3.5">
                   {/* Line 1: 100% Full-Width Product Name (No Truncation) */}
-                  <Link href={`/products/${product.id}`}>
+                  <Link href={`/products/${product.slug}`}>
                     <h3 className="font-sans text-[10.5px] font-semibold leading-[1.18] tracking-[-0.02em] text-[#111111] transition-colors hover:text-[#8C671A] sm:text-[13.5px] sm:leading-snug sm:tracking-[-0.01em] xl:text-[15px] 2xl:text-[16px]">
                       {product.name}
                     </h3>

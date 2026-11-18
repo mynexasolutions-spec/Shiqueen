@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
-import { useCart, GIFT_WRAP_PRICE } from "@/context/CartContext";
-import { SOCIAL_LINKS } from "@/lib/brand-data";
+import { useCart } from "@/context/CartContext";
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
 import { WhatsAppIcon } from "@/components/Header";
 
 function BagEmptySvg() {
@@ -76,7 +76,12 @@ export default function CartDrawer() {
     totalOriginalPrice,
     giftWrapTotal,
     grandTotal,
+    giftWrapPrice: GIFT_WRAP_PRICE,
   } = useCart();
+  const site = useSite();
+  const whatsapp = useWhatsApp();
+  const { shipping_fee, free_shipping_threshold } = site.settings;
+  const shippingFree = shipping_fee === 0 || (free_shipping_threshold > 0 && subtotal >= free_shipping_threshold);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -104,7 +109,7 @@ export default function CartDrawer() {
     const text = `Hi Shiqueen! I would like to place an order:\n\n${itemLines}\n\nTotal Payable: ₹${grandTotal.toLocaleString(
       "en-IN"
     )}\nPlease share payment & shipping details.`;
-    window.open(SOCIAL_LINKS.whatsappUrl(text), "_blank", "noopener,noreferrer");
+    window.open(whatsapp(text), "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -153,7 +158,7 @@ export default function CartDrawer() {
           <div className="flex items-center justify-between text-xs font-medium text-[#171717]">
             <span className="inline-flex items-center gap-1.5">
               <SparkleSvg className="h-3.5 w-3.5 text-[#8C671A]" />
-              <span>Free Express Shipping + Extra 10% OFF on Prepaid</span>
+              <span>{site.content.cart.drawer_promo}</span>
             </span>
             <span className="rounded-full bg-[#107C41] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
               Unlocked
@@ -323,12 +328,16 @@ export default function CartDrawer() {
                 </div>
                 <div className="flex justify-between text-[#171717]/75 xl:text-[#171717]/85">
                   <span>Pan-India Express Shipping</span>
-                  <span className="font-bold text-[#107C41]">FREE</span>
+                  {shippingFree ? (
+                    <span className="font-bold text-[#107C41]">FREE</span>
+                  ) : (
+                    <span className="font-bold text-[#171717]">₹{shipping_fee.toLocaleString("en-IN")}</span>
+                  )}
                 </div>
                 <div className="flex items-baseline justify-between border-t border-[#E5DEC9] pt-2.5 text-sm font-bold text-[#111111]">
                   <span>Estimated Total</span>
                   <span className="text-base">
-                    ₹{grandTotal.toLocaleString("en-IN")}
+                    ₹{(grandTotal + (shippingFree ? 0 : shipping_fee)).toLocaleString("en-IN")}
                   </span>
                 </div>
               </div>
@@ -348,7 +357,7 @@ export default function CartDrawer() {
                   className="flex w-full items-center justify-center gap-2 rounded-full border border-[#171717] bg-[#FAF7F2] py-2.5 text-xs font-semibold uppercase tracking-wider text-[#171717] transition hover:border-[#8C671A] hover:text-[#8C671A]"
                 >
                   <WhatsAppIcon className="h-4 w-4 text-[#1E7E34]" />
-                  <span>Instant Order via WhatsApp</span>
+                  <span>{site.content.cart.whatsapp_cta}</span>
                 </button>
               </div>
             </div>

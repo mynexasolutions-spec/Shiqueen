@@ -5,26 +5,26 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TrustMarquee from "@/components/TrustMarquee";
 import CollectionView from "@/components/collection/CollectionView";
-import {
-  COLLECTIONS_DATA,
-  getCollectionBySlug,
-  getProductsByCollection,
-} from "@/lib/collections-data";
-import { BRAND } from "@/lib/brand-data";
+import { getAllCategorySlugs, getCollectionPageData } from "@/lib/server/catalog";
+import { getPublicSite } from "@/lib/server/content";
+
+// Catalogue pages are fully static (cached DB reads). New slugs created in the
+// admin render completely on their first visit instead of showing a skeleton.
+export const ensureStatic = "navigation";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return Object.keys(COLLECTIONS_DATA).map((slug) => ({
-    slug,
-  }));
+  const slugs = await getAllCategorySlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const collection = getCollectionBySlug(slug);
+  const BRAND = (await getPublicSite()).content.brand;
+  const collection = (await getCollectionPageData(slug))?.collection;
 
   if (!collection) {
     return {
@@ -49,15 +49,13 @@ async function CollectionContent({
   paramsPromise: Promise<{ slug: string }>;
 }) {
   const { slug } = await paramsPromise;
-  const collection = getCollectionBySlug(slug);
+  const data = await getCollectionPageData(slug);
 
-  if (!collection) {
+  if (!data) {
     notFound();
   }
 
-  const products = getProductsByCollection(slug);
-
-  return <CollectionView collection={collection} initialProducts={products} />;
+  return <CollectionView key={slug} collection={data.collection} initialProducts={data.products} />;
 }
 
 function CollectionSkeleton() {

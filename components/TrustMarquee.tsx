@@ -1,71 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, useEffect } from "react";
-
-const REVIEWS = [
-  {
-    id: "review-1",
-    author: "Ananya Sharma",
-    location: "Mumbai",
-    verified: true,
-    rating: 5,
-    product: "Aura Triple Layered Bar Necklace",
-    quote:
-      "I've worn this necklace continuously for 8 months—daily hot showers, sweaty gym sessions, and even a Goa beach trip. Still shines like solid gold. Never taking it off!",
-  },
-  {
-    id: "review-2",
-    author: "Riya Malhotra",
-    location: "New Delhi",
-    verified: true,
-    rating: 5,
-    product: "The Queen's Luxury Keepsake Hamper",
-    quote:
-      "The customized gift hamper for my sister's birthday was pure magic! The warm fairy lights, gold watch, and handwritten letter made her tear up with joy. Best gifting experience ever!",
-  },
-  {
-    id: "review-3",
-    author: "Tanvi Kulkarni",
-    location: "Bengaluru",
-    verified: true,
-    rating: 5,
-    product: "Eternal Paperclip Chain & Cuff Duo",
-    quote:
-      "Zero green skin is real! I have hyper-sensitive skin and usually get rashes from artificial jewelry, but Shiqueen's 316L medical steel is truly hypoallergenic. So lightweight and luxury!",
-  },
-  {
-    id: "review-4",
-    author: "Sneha Patel",
-    location: "Pune",
-    verified: true,
-    rating: 5,
-    product: "Signature Jewelry Bouquet",
-    quote:
-      "The jewelry bouquet was the biggest viral hit at my best friend's bridal shower! The preserved blooms and gold necklace are so gorgeous together. The video preview on WhatsApp gave total peace of mind.",
-  },
-  {
-    id: "review-5",
-    author: "Meera Iyer",
-    location: "Chennai",
-    verified: true,
-    rating: 5,
-    product: "Royale Jubilee Gold Watch",
-    quote:
-      "This watch looks like a ₹35,000 heirloom timepiece. I wear it to office and dinners, and everyone asks where I got it. Waterproof feature is a lifesaver in daily hand washing!",
-  },
-  {
-    id: "review-6",
-    author: "Pooja Verma",
-    location: "Jaipur",
-    verified: true,
-    rating: 5,
-    product: "Starlight Triple Stacking Ring Trio",
-    quote:
-      "Rings didn't fade even with constant soap and alcohol sanitizer contact throughout the day. Premium 18K gold gleam that doesn't chip. 10/10 recommend to all Queens!",
-  },
-] as const;
+import { useSite } from "@/components/site/SiteProvider";
+import { splitHighlight } from "@/lib/site-types";
 
 export default function TrustMarquee() {
+  const { content, featuredReviews: REVIEWS } = useSite();
+  const home = content.home;
+  const [before, highlight, after] = splitHighlight(home.reviews_title, home.reviews_highlight);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -120,16 +63,18 @@ export default function TrustMarquee() {
 
   // Auto-scroll 1 card every 5 seconds (pauses on hover/touch)
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || REVIEWS.length < 2) return;
     const timer = setInterval(() => {
       scrollOneCard("right");
     }, 5500);
     return () => clearInterval(timer);
-  }, [isPaused]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPaused, REVIEWS.length]);
 
   return (
     <>
-      {/* 1. Verified Customer Reviews: 1-by-1 Smooth Card Carousel */}
+      {/* 1. Verified Customer Reviews (featured in Admin → Reviews) */}
+      {REVIEWS.length > 0 && (
       <section
         id="reviews"
         aria-label="Customer Reviews & Testimonials"
@@ -142,16 +87,17 @@ export default function TrustMarquee() {
               <div className="inline-flex items-center gap-2">
                 <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
                 <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8C671A]">
-                  The Queen Squad
+                  {home.reviews_eyebrow}
                 </p>
                 <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
               </div>
               <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#231C16] sm:text-4xl">
-                Loved by 10,000+ Queens{" "}
-                <span className="italic text-[#8C671A]">Across India</span>
+                {before}
+                {highlight && <span className="italic text-[#8C671A]">{highlight}</span>}
+                {after}
               </h2>
               <p className="mt-1.5 text-xs font-medium text-[#231C16]/75 sm:text-sm xl:text-[15px] xl:font-semibold xl:text-[#231C16]/85">
-                Real stories from verified buyers wearing Shiqueen waterproof jewelry 24/7.
+                {home.reviews_text}
               </p>
             </div>
 
@@ -199,26 +145,36 @@ export default function TrustMarquee() {
                   <div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1 text-amber-500 text-sm">
-                        ★★★★★
+                        <span aria-label={`${rev.rating} out of 5 stars`}>
+                          {"★".repeat(rev.rating)}
+                          <span className="text-amber-500/30">{"★".repeat(5 - rev.rating)}</span>
+                        </span>
                       </div>
-                      <span className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 font-sans text-[10px] font-bold text-emerald-700">
-                        ✓ Verified Queen
-                      </span>
+                      {rev.verified && (
+                        <span className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 font-sans text-[10px] font-bold text-emerald-700">
+                          ✓ Verified Buyer
+                        </span>
+                      )}
                     </div>
 
                     <p className="mt-4 font-sans text-xs font-medium italic leading-relaxed text-[#231C16]/80 sm:text-[13px] xl:font-semibold xl:text-[#231C16]/90 2xl:text-sm">
-                      &ldquo;{rev.quote}&rdquo;
+                      &ldquo;{rev.body}&rdquo;
                     </p>
                   </div>
 
                   <div className="mt-6 border-t border-[#F0EAE0] pt-4">
                     <p className="font-sans text-xs 2xl:text-sm font-bold text-[#231C16]">
                       {rev.author}{" "}
-                      <span className="font-medium text-[#231C16]/65 xl:font-semibold xl:text-[#231C16]/75">• {rev.location}</span>
+                      {rev.location && (
+                        <span className="font-medium text-[#231C16]/65 xl:font-semibold xl:text-[#231C16]/75">• {rev.location}</span>
+                      )}
                     </p>
-                    <p className="mt-0.5 font-sans text-[10.5px] 2xl:text-xs font-semibold text-[#8C671A] line-clamp-1">
-                      Purchased: {rev.product}
-                    </p>
+                    <Link
+                      href={`/products/${rev.product_slug}`}
+                      className="mt-0.5 block font-sans text-[10.5px] 2xl:text-xs font-semibold text-[#8C671A] line-clamp-1 hover:underline"
+                    >
+                      Purchased: {rev.product_name}
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -243,33 +199,25 @@ export default function TrustMarquee() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Infinite Royal Gold Ticker Ribbon */}
+      {home.ticker_items.length > 0 && (
       <aside
         aria-label="Brand Highlights Ticker"
         className="overflow-hidden border-b border-[#E5DEC9] bg-[#8C671A] py-3 text-white"
       >
         <div className="flex whitespace-nowrap text-xs font-bold tracking-[0.25em] uppercase">
-          <div className="flex shrink-0 animate-marquee items-center gap-8 px-4">
-            <span>✦ 100% WATERPROOF &amp; SWEATPROOF JEWELRY</span>
-            <span>✦ 18K GOLD VACUUM PVD PLATING</span>
-            <span>✦ ZERO GREEN SKIN &amp; HYPOALLERGENIC</span>
-            <span>✦ HANDCRAFTED CUSTOM GIFT HAMPERS</span>
-            <span>✦ EVERLASTING JEWELRY BOUQUETS</span>
-            <span>✦ PAN-INDIA INSURED SHIPPING</span>
-            <span>✦ 1-ON-1 WHATSAPP CONCIERGE CARE</span>
-          </div>
-          <div className="flex shrink-0 animate-marquee items-center gap-8 px-4" aria-hidden="true">
-            <span>✦ 100% WATERPROOF &amp; SWEATPROOF JEWELRY</span>
-            <span>✦ 18K GOLD VACUUM PVD PLATING</span>
-            <span>✦ ZERO GREEN SKIN &amp; HYPOALLERGENIC</span>
-            <span>✦ HANDCRAFTED CUSTOM GIFT HAMPERS</span>
-            <span>✦ EVERLASTING JEWELRY BOUQUETS</span>
-            <span>✦ PAN-INDIA INSURED SHIPPING</span>
-            <span>✦ 1-ON-1 WHATSAPP CONCIERGE CARE</span>
-          </div>
+          {[0, 1].map((copy) => (
+            <div key={copy} className="flex shrink-0 animate-marquee items-center gap-8 px-4" aria-hidden={copy === 1}>
+              {home.ticker_items.map((t, i) => (
+                <span key={i}>✦ {t}</span>
+              ))}
+            </div>
+          ))}
         </div>
       </aside>
+      )}
     </>
   );
 }

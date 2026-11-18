@@ -1,41 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { SOCIAL_LINKS } from "@/lib/brand-data";
 import { WhatsAppIcon } from "@/components/Header";
-
-const PROOF_CARDS = [
-  {
-    id: "waterproof",
-    title: "100% Waterproof & Sweatproof",
-    desc: "Wear 24/7 without taking it off. Impervious to hot showers, intense gym workouts, and saltwater.",
-    tag: "✦ Zero Tarnish 24/7",
-    image: "/images/proof/proof-waterproof.jpg",
-  },
-  {
-    id: "green-skin",
-    title: "Zero Green Skin Guaranteed",
-    desc: "100% nickel-free and lead-free 316L surgical steel. Guaranteed to never turn skin green or cause rashes.",
-    tag: "✦ Sensitive Skin Safe",
-    image: "/images/proof/proof-hypoallergenic.jpg",
-  },
-  {
-    id: "gold-pvd",
-    title: "18K Gold Vacuum PVD Plating",
-    desc: "Real 18K gold vapor-bonded deep into medical steel. 10x more durable against perfumes and body lotions.",
-    tag: "✦ Perfume & Sweat Proof",
-    image: "/images/proof/proof-pvd.jpg",
-  },
-  {
-    id: "gifting",
-    title: "WhatsApp Video Preview & Care",
-    desc: "Every order is verified and previewed on video on WhatsApp before dispatch, packed in luxury keepsake boxes.",
-    tag: "✦ Insured Express Delivery",
-    image: "/images/proof/proof-gifting.jpg",
-  },
-] as const;
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
+import { splitHighlight } from "@/lib/site-types";
 
 export default function AntiTarnishProof() {
+  const home = useSite().content.home;
+  const whatsapp = useWhatsApp();
+  if (!home.proof_show) return null;
+  const PROOF_CARDS = home.proof_cards;
+  const [before, highlight, after] = splitHighlight(home.proof_title, home.proof_highlight);
   return (
     <section
       id="why-shiqueen"
@@ -48,34 +23,35 @@ export default function AntiTarnishProof() {
           <div className="inline-flex items-center gap-2">
             <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
             <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8C671A]">
-              The Shiqueen Standard
+              {home.proof_eyebrow}
             </p>
             <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
           </div>
           <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#231C16] sm:text-4xl lg:text-5xl">
-            Waterproof. Sweatproof.{" "}
-            <span className="italic text-[#8C671A]">Life-Proof.</span>
+            {before}
+            {highlight && <span className="italic text-[#8C671A]">{highlight}</span>}
+            {after}
           </h2>
           <p className="mt-3 text-xs font-medium leading-relaxed text-[#231C16]/75 sm:text-sm lg:text-base xl:font-semibold xl:text-[#231C16]/85">
-            Say goodbye to faded black jewelry and green skin stains. Engineered with medical-grade 316L stainless steel &amp; 18K gold vacuum PVD molecular bonding.
+            {home.proof_text}
           </p>
         </div>
 
         {/* Visual Lifestyle Proof Cards (Idea 1: Photo-backed Editorial Luxury Tiles) */}
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PROOF_CARDS.map((card) => (
+          {PROOF_CARDS.map((card, idx) => (
             <div
-              key={card.id}
+              key={idx}
               className="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-3xl border border-[#DFC99B] bg-[#231C16] p-6 shadow-md transition-all duration-500 hover:-translate-y-1.5 hover:border-[#8C671A] hover:shadow-2xl sm:aspect-[4/5] sm:p-7"
             >
               {/* Background Lifestyle Image */}
-              <Image
+              {card.image && <Image
                 src={card.image}
                 alt={card.title}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-              />
+              />}
 
               {/* Luxury Vignette Gradient Overlay */}
               <div
@@ -89,7 +65,7 @@ export default function AntiTarnishProof() {
                   {card.title}
                 </h3>
                 <p className="mt-2 font-sans text-xs leading-relaxed text-white/85 sm:text-[12.5px]">
-                  {card.desc}
+                  {card.text}
                 </p>
 
                 <div className="mt-4 border-t border-white/20 pt-3">
@@ -106,22 +82,20 @@ export default function AntiTarnishProof() {
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-[#DFC99B] bg-white p-5 sm:px-8 shadow-xs">
           <div>
             <p className="font-sans text-xs font-bold text-[#231C16] xl:text-sm">
-              Have questions about sizing, anti-tarnish warranty, or delivery dates?
+              {home.proof_help_title}
             </p>
             <p className="mt-0.5 font-sans text-[11px] font-medium text-[#231C16]/70 xl:text-xs xl:font-semibold xl:text-[#231C16]/82">
-              Our personal stylists are available 1-on-1 on WhatsApp to guide you.
+              {home.proof_help_text}
             </p>
           </div>
           <a
-            href={SOCIAL_LINKS.whatsappUrl(
-              "Hi Shiqueen! I have a question regarding your 18K anti-tarnish warranty, jewelry sizing, and delivery."
-            )}
+            href={whatsapp(home.proof_cta_message)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] px-6 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all"
           >
             <WhatsAppIcon className="h-4 w-4 text-[#F7DFC2]" />
-            <span>Ask a Stylist on WhatsApp</span>
+            <span>{home.proof_cta_label}</span>
           </a>
         </div>
       </div>

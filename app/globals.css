@@ -71,3 +71,13 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* Keep browser-autofilled fields on-brand (no blue/yellow autofill background). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: #171717;
+  caret-color: #171717;
+  transition: background-color 9999s ease-out 0s;
+}

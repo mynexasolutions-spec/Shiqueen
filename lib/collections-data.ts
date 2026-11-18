@@ -1,4 +1,4 @@
-import { BRAND, SOCIAL_LINKS } from "./brand-data";
+// Starter catalogue used by `npm run db:seed`, plus shared catalogue types.
 
 export interface CollectionMeta {
   slug: string;
@@ -8,6 +8,8 @@ export interface CollectionMeta {
   badge: string;
   bannerImage: string;
   subcategories: string[];
+  /** Breadcrumb trail of parent categories (top level first), when loaded from the database. */
+  ancestors?: { slug: string; name: string }[];
 }
 
 export interface CatalogProduct {
@@ -24,10 +26,18 @@ export interface CatalogProduct {
   rating: number;
   reviewCount: number;
   inStock: boolean;
-  plating: "18K Gold Plated" | "Rose Gold" | "Silver" | "Antique Gold";
+  plating: string;
   material: string;
   features: string[];
   description: string;
+  /** Full ordered gallery (database products). Falls back to primary/hover images. */
+  images?: string[];
+  /** Admin-defined specifications (database products). */
+  specifications?: ProductSpecItem[];
+  /** Finish options offered for this product (database products). */
+  finishes?: string[];
+  /** Name of the product's own (deepest) category. */
+  categoryName?: string;
 }
 
 export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
@@ -624,94 +634,6 @@ export function getProductSpecifications(product: CatalogProduct): ProductSpecIt
     {
       label: "Durability & Spec",
       value: "100% Anti-Tarnish, Waterproof, Sweatproof & Skin-Safe",
-    },
-  ];
-}
-
-export interface ProductReview {
-  id: string;
-  author: string;
-  initials: string;
-  location: string;
-  date: string;
-  rating: number;
-  verified: boolean;
-  title: string;
-  body: string;
-  images?: string[];
-  helpfulCount: number;
-  variantPurchased: string;
-}
-
-export function getProductReviews(product: CatalogProduct): ProductReview[] {
-  return [
-    {
-      id: `${product.slug}-rev-1`,
-      author: "Smita Sharma",
-      initials: "SS",
-      location: "Mumbai",
-      date: "12 Oct 2026",
-      rating: 5,
-      verified: true,
-      title: "Looks exactly like real 18K gold!",
-      body: `Bought the ${product.name} two months ago and I wear it almost every single day—even in the shower and to the office. The finish hasn't faded a bit and it looks super dainty and classy!`,
-      images: [product.hoverImage, product.primaryImage],
-      helpfulCount: 19,
-      variantPurchased: product.plating,
-    },
-    {
-      id: `${product.slug}-rev-2`,
-      author: "Ananya Verma",
-      initials: "AV",
-      location: "Delhi NCR",
-      date: "28 Sep 2026",
-      rating: 5,
-      verified: true,
-      title: "Zero tarnish & gorgeous packaging",
-      body: `I have super sensitive skin and most artificial jewelry gives me rashes, but Shiqueen's ${product.material.toLowerCase()} piece feels featherlight and completely irritation-free. Also loved the cute keepsake box!`,
-      images: [product.primaryImage],
-      helpfulCount: 14,
-      variantPurchased: product.plating,
-    },
-    {
-      id: `${product.slug}-rev-3`,
-      author: "Riya Patel",
-      initials: "RP",
-      location: "Ahmedabad",
-      date: "15 Sep 2026",
-      rating: 5,
-      verified: true,
-      title: "Best gifting decision ever",
-      body: `Ordered this with the ₹50 special gift wrap for my sister's birthday. Their WhatsApp support team helped me add a handwritten note and delivered it in just 2 days. She was obsessed!`,
-      images: [product.hoverImage],
-      helpfulCount: 11,
-      variantPurchased: `${product.plating} + Gift Wrap`,
-    },
-    {
-      id: `${product.slug}-rev-4`,
-      author: "Meera Nair",
-      initials: "MN",
-      location: "Bengaluru",
-      date: "03 Sep 2026",
-      rating: 4,
-      verified: true,
-      title: "Very elegant & premium shine",
-      body: `The quality of the clasp and detailing on ${product.name} is way better than other brands at this price point. Bought 2 pieces under the B1G1 offer and both are stunning.`,
-      helpfulCount: 7,
-      variantPurchased: product.plating,
-    },
-    {
-      id: `${product.slug}-rev-5`,
-      author: "Pooja Malhotra",
-      initials: "PM",
-      location: "Chandigarh",
-      date: "21 Aug 2026",
-      rating: 5,
-      verified: true,
-      title: "Repeat customer — my 4th order from Shiqueen!",
-      body: `Every time I wear this out, people ask me which jeweler I got it from. Totally waterproof and worth every rupee.`,
-      helpfulCount: 9,
-      variantPurchased: product.plating,
     },
   ];
 }

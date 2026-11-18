@@ -12,7 +12,7 @@ export default function NotFound() {
           Page Not Found
         </h1>
         <p className="mt-2 max-w-md text-sm text-[#171717]/70">
-          The jewelry collection or page you are looking for doesn't exist or has moved.
+          The jewelry collection or page you are looking for doesn&apos;t exist or has moved.
         </p>
         <Link
           href="/"

@@ -113,8 +113,8 @@ export default function CollectionView({
         {/* Product Grid */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-5 xl:gap-6 2xl:gap-7">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {filteredProducts.map((product, i) => (
+              <ProductCard key={product.id} product={product} eager={i < 4} />
             ))}
           </div>
         ) : (
@@ -124,7 +124,7 @@ export default function CollectionView({
               No pieces match this filter
             </h3>
             <p className="mt-1 text-xs text-[#171717]/60">
-              Try switching back to "All" or clear your selected filters.
+              Try switching back to &ldquo;All&rdquo; or clear your selected filters.
             </p>
             <button
               type="button"

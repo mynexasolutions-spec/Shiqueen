@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSite } from "@/components/site/SiteProvider";
 
 export interface CartItem {
   id: string;
@@ -29,14 +30,16 @@ interface CartContextValue {
   totalOriginalPrice: number;
   giftWrapTotal: number;
   grandTotal: number;
+  /** Per-item gift wrap price from Admin → Settings. */
+  giftWrapPrice: number;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "shiqueen_cart_v1";
-export const GIFT_WRAP_PRICE = 50;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const GIFT_WRAP_PRICE = useSite().settings.gift_wrap_price;
   const [items, setItems] = useState<CartItem[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -47,6 +50,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
+          // Restoring the saved bag after mount (localStorage isn't available during server render).
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItems(parsed);
         }
       }
@@ -163,6 +168,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalOriginalPrice,
         giftWrapTotal,
         grandTotal,
+        giftWrapPrice: GIFT_WRAP_PRICE,
       }}
     >
       {children}

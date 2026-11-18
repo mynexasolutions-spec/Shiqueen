@@ -8,10 +8,11 @@ import {
   type CatalogProduct,
   type CollectionMeta,
   type ProductSpecItem,
-  type ProductReview,
 } from "@/lib/collections-data";
-import { SOCIAL_LINKS } from "@/lib/brand-data";
-import { useCart, GIFT_WRAP_PRICE } from "@/context/CartContext";
+import { useCart } from "@/context/CartContext";
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
+import type { PublicReview } from "@/lib/site-types";
+import ReviewsSection from "./ReviewsSection";
 import { WhatsAppIcon } from "@/components/Header";
 import ProductCard from "@/components/collection/ProductCard";
 
@@ -19,55 +20,11 @@ interface ProductDetailViewProps {
   product: CatalogProduct;
   collection?: CollectionMeta;
   specifications: ProductSpecItem[];
-  initialReviews: ProductReview[];
+  reviews: PublicReview[];
+  storeReviews: PublicReview[];
+  storeReviewTotal: number;
   relatedProducts: CatalogProduct[];
 }
-
-const FINISH_OPTIONS = [
-  {
-    name: "18K Gold Plated",
-    swatchBg: "linear-gradient(135deg, #E6C665 0%, #B38728 50%, #FBF5B7 100%)",
-  },
-  {
-    name: "Rose Gold",
-    swatchBg: "linear-gradient(135deg, #F3C6B6 0%, #C88A78 50%, #FADCD2 100%)",
-  },
-  {
-    name: "Silver",
-    swatchBg: "linear-gradient(135deg, #E2E5E8 0%, #9FA6AD 50%, #F5F7FA 100%)",
-  },
-] as const;
-
-const COUPON_OFFERS = [
-  {
-    id: "b1g1",
-    saveLabel: "Save ₹800",
-    headline: "Get each piece at 50% value",
-    body: "Buy 1 Get 1 FREE — add any 2 pieces, pay for 1",
-    subtext: "+ Extra 10% OFF on prepaid orders",
-    code: "B1G1QUEEN",
-  },
-  {
-    id: "flat50",
-    saveLabel: "Save ₹1,200",
-    headline: "Royal Bundle Privilege",
-    body: "Buy 3 or more & get FLAT 50% OFF on every piece",
-    subtext: "+ Free Keepsake Box on orders above ₹1,999",
-    code: "ROYAL50",
-  },
-  {
-    id: "new50",
-    saveLabel: "Save ₹50",
-    headline: "Welcome Queen Offer",
-    body: "Extra ₹50 OFF on your first purchase. Use code NEW50",
-    subtext: "+ Extra 10% OFF on UPI / Prepaid orders",
-    code: "NEW50",
-  },
-] as const;
-
-/* ============================================================================
- * BESPOKE LUXURY SVG ICON SUITE (100% Vector, Zero Emojis)
- * ========================================================================== */
 
 function StarRow({
   rating = 5,
@@ -449,66 +406,6 @@ function BriefcaseStyleSvg({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function CameraPhotoSvg({ className = "h-3.5 w-3.5" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-      <circle cx="12" cy="13" r="4" />
-    </svg>
-  );
-}
-
-function ThumbUpSvg({ className = "h-3.5 w-3.5" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-}
-
-function FilterSlidersSvg({ className = "h-3.5 w-3.5" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <line x1="4" y1="21" x2="4" y2="14" />
-      <line x1="4" y1="10" x2="4" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="12" />
-      <line x1="12" y1="8" x2="12" y2="3" />
-      <line x1="20" y1="21" x2="20" y2="16" />
-      <line x1="20" y1="12" x2="20" y2="3" />
-      <line x1="1" y1="14" x2="7" y2="14" />
-      <line x1="9" y1="8" x2="15" y2="8" />
-      <line x1="17" y1="16" x2="23" y2="16" />
-    </svg>
-  );
-}
-
 function SpecIcon({ index }: { index: number }) {
   const cls = "h-4 w-4 text-[#8C671A]";
   switch (index) {
@@ -531,32 +428,41 @@ export default function ProductDetailView({
   product,
   collection,
   specifications,
-  initialReviews,
+  reviews,
+  storeReviews,
+  storeReviewTotal,
   relatedProducts,
 }: ProductDetailViewProps) {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addItem, giftWrapPrice: GIFT_WRAP_PRICE } = useCart();
+  const site = useSite();
+  const pp = site.content.product_page;
+  const whatsapp = useWhatsApp();
+  const FINISH_OPTIONS = (product.finishes?.length ? product.finishes : [product.plating]).map((name) => {
+    const opt = pp.finish_options.find((f) => f.name.toLowerCase() === name.toLowerCase());
+    return {
+      name,
+      swatchBg: opt?.swatch || "linear-gradient(135deg, #E6C665 0%, #B38728 50%, #FBF5B7 100%)",
+      vibe: opt?.vibe ?? "",
+    };
+  });
+  const COUPON_OFFERS = site.offers;
 
-  // Exactly 2 curated images per product: 1. Studio Shot, 2. On-Model / Hover Shot
-  const galleryImages = useMemo(
-    () => [
-      {
-        src: product.primaryImage,
-        label: "Studio Close-Up",
-        alt: `${product.name} — Studio View`,
-      },
-      {
-        src: product.hoverImage || product.primaryImage,
-        label: "On-Model Look",
-        alt: `${product.name} — On-Model Lifestyle View`,
-      },
-    ],
-    [product.primaryImage, product.hoverImage, product.name]
-  );
+  // Full gallery uploaded in Admin → Products (falls back to studio + on-model shots).
+  const galleryImages = useMemo(() => {
+    const sources = product.images?.length
+      ? product.images
+      : [product.primaryImage, product.hoverImage || product.primaryImage];
+    return sources.map((src, i) => ({
+      src,
+      label: `View ${i + 1}`,
+      alt: `${product.name} — image ${i + 1}`,
+    }));
+  }, [product.images, product.primaryImage, product.hoverImage, product.name]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [zoomModalIndex, setZoomModalIndex] = useState<number | null>(null);
-  const [selectedFinish, setSelectedFinish] = useState<string>(product.plating);
+  const [selectedFinish, setSelectedFinish] = useState<string>(FINISH_OPTIONS[0]?.name ?? product.plating);
   const [quantity, setQuantity] = useState<number>(1);
   const [giftWrap, setGiftWrap] = useState<boolean>(false);
   const [giftMessage, setGiftMessage] = useState<string>("");
@@ -573,31 +479,6 @@ export default function ProductDetailView({
   const [activeDetailTab, setActiveDetailTab] = useState<
     "description" | "specifications" | "shipping_care"
   >("description");
-
-  // Reviews interactive state
-  const [reviews, setReviews] = useState<ProductReview[]>(initialReviews);
-  const [activeReviewTab, setActiveReviewTab] = useState<"product" | "store">(
-    "product"
-  );
-  const [showReviewFilters, setShowReviewFilters] = useState(false);
-  const [ratingFilter, setRatingFilter] = useState<number | "all" | "photos">(
-    "all"
-  );
-  const [reviewSort, setReviewSort] = useState<
-    "pictures" | "recent" | "highest" | "helpful"
-  >("pictures");
-  const [helpfulClickedIds, setHelpfulClickedIds] = useState<
-    Record<string, boolean>
-  >({});
-
-  // Write a review form state
-  const [showWriteReview, setShowWriteReview] = useState(false);
-  const [newReviewName, setNewReviewName] = useState("");
-  const [newReviewLocation, setNewReviewLocation] = useState("");
-  const [newReviewRating, setNewReviewRating] = useState(5);
-  const [newReviewTitle, setNewReviewTitle] = useState("");
-  const [newReviewBody, setNewReviewBody] = useState("");
-  const [reviewSubmittedBanner, setReviewSubmittedBanner] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -626,18 +507,19 @@ export default function ProductDetailView({
       return;
     }
     const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + 3);
+    deliveryDate.setDate(deliveryDate.getDate() + (pp.delivery_days || 0));
     const formatted = deliveryDate.toLocaleDateString("en-IN", {
       weekday: "short",
       day: "numeric",
       month: "short",
     });
-    setPincodeResult(
-      `Express Delivery by ${formatted} to ${cleaned} • Free Shipping & COD Available`
-    );
+    setPincodeResult(pp.pincode_message.replace("{date}", formatted).replace("{pincode}", cleaned));
   };
 
+  const outOfStock = !product.inStock;
+
   const handleAddToCart = () => {
+    if (outOfStock) return;
     addItem(
       {
         id: product.id,
@@ -656,6 +538,7 @@ export default function ProductDetailView({
   };
 
   const handleBuyNow = () => {
+    if (outOfStock) return;
     addItem(
       {
         id: product.id,
@@ -676,85 +559,28 @@ export default function ProductDetailView({
 
   const handleWhatsAppOrder = () => {
     const giftNote = giftWrap ? ` + Special Gift Wrap (₹${GIFT_WRAP_PRICE})` : "";
-    const text = `Hi Shiqueen! I want to order "${product.name}" (${selectedFinish}) × ${quantity} — ₹${(
+    const text = `Hi! I want to order "${product.name}" (${selectedFinish}) × ${quantity} — ₹${(
       product.price * quantity +
       (giftWrap ? GIFT_WRAP_PRICE * quantity : 0)
     ).toLocaleString("en-IN")}${giftNote}. Please share instant checkout details.`;
-    window.open(SOCIAL_LINKS.whatsappUrl(text), "_blank", "noopener,noreferrer");
-  };
-
-  const filteredAndSortedReviews = useMemo(() => {
-    let list = [...reviews];
-    if (ratingFilter === "photos") {
-      list = list.filter((r) => r.images && r.images.length > 0);
-    } else if (typeof ratingFilter === "number") {
-      list = list.filter((r) => r.rating === ratingFilter);
-    }
-
-    if (reviewSort === "pictures") {
-      list.sort((a, b) => (b.images?.length ?? 0) - (a.images?.length ?? 0));
-    } else if (reviewSort === "highest") {
-      list.sort((a, b) => b.rating - a.rating);
-    } else if (reviewSort === "helpful") {
-      list.sort((a, b) => b.helpfulCount - a.helpfulCount);
-    }
-    return list;
-  }, [reviews, ratingFilter, reviewSort]);
-
-  const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReviewName.trim() || !newReviewBody.trim()) return;
-    const initials = newReviewName
-      .trim()
-      .split(" ")
-      .map((p) => p[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-
-    const created: ProductReview = {
-      id: `custom-${Date.now()}`,
-      author: newReviewName.trim(),
-      initials: initials || "SQ",
-      location: newReviewLocation.trim() || "India",
-      date: "Just now",
-      rating: newReviewRating,
-      verified: true,
-      title: newReviewTitle.trim() || "Loved this piece from Shiqueen!",
-      body: newReviewBody.trim(),
-      helpfulCount: 1,
-      variantPurchased: selectedFinish,
-    };
-
-    setReviews((prev) => [created, ...prev]);
-    setNewReviewName("");
-    setNewReviewLocation("");
-    setNewReviewTitle("");
-    setNewReviewBody("");
-    setShowWriteReview(false);
-    setReviewSubmittedBanner(true);
-    setTimeout(() => setReviewSubmittedBanner(false), 4000);
+    window.open(whatsapp(text), "_blank", "noopener,noreferrer");
   };
 
   return (
     <div className="bg-[#FAF7F2] text-[#171717]">
-      {/* 0. Swashaa-Inspired Promotional Marquee Pill Strip */}
-      <div className="border-b border-[#E5DEC9] bg-[#EFE8E4] py-2.5">
-        <div className="mx-auto flex max-w-[1760px] flex-wrap items-center justify-center gap-x-8 gap-y-1 px-4 text-center text-[11px] font-bold uppercase tracking-[0.14em] text-[#171717] sm:text-xs">
-          <span>
-            BUY 1 GET 1 <span className="text-[#B91C1C]">FREE</span> SITEWIDE
-          </span>
-          <SparkleSvg className="hidden h-3 w-3 text-[#8C671A] sm:inline" />
-          <span>
-            BUY <span className="text-[#B91C1C]">3</span> OR MORE GET FLAT{" "}
-            <span className="text-[#B91C1C]">50% OFF</span>
-          </span>
-          <SparkleSvg className="hidden h-3 w-3 text-[#8C671A] sm:inline" />
-          <span>
-            EXTRA <span className="text-[#B91C1C]">10% OFF</span> ON PREPAID ORDERS
-          </span>
+      {/* 0. Promo strip (Admin → Storefront → Product page) */}
+      {pp.promo_strip.length > 0 && (
+        <div className="border-b border-[#E5DEC9] bg-[#EFE8E4] py-2.5">
+          <div className="mx-auto flex max-w-[1760px] flex-wrap items-center justify-center gap-x-8 gap-y-1 px-4 text-center text-[11px] font-bold uppercase tracking-[0.14em] text-[#171717] sm:text-xs">
+            {pp.promo_strip.map((msg, i) => (
+              <span key={i} className="inline-flex items-center gap-8">
+                {i > 0 && <SparkleSvg className="hidden h-3 w-3 text-[#8C671A] sm:inline" />}
+                <span>{msg}</span>
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 1. Breadcrumb Navigation */}
       <nav
@@ -801,7 +627,8 @@ export default function ProductDetailView({
                   alt={galleryImages[activeImageIndex].alt}
                   fill
                   sizes="(min-width: 1024px) 58vw, 100vw"
-                  priority
+                  loading="eager"
+                  fetchPriority="high"
                   onClick={() => setZoomModalIndex(activeImageIndex)}
                   className="cursor-zoom-in object-cover object-center transition-all duration-500"
                 />
@@ -821,13 +648,13 @@ export default function ProductDetailView({
               <div
                 role="tablist"
                 aria-label="Product Image Views"
-                className="mt-3 grid grid-cols-2 gap-2.5 sm:mt-3.5 sm:gap-3.5 xl:mt-4 xl:gap-4"
+                className={`mt-3 grid gap-2.5 sm:mt-3.5 sm:gap-3.5 xl:mt-4 xl:gap-4 ${galleryImages.length > 2 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2"}`}
               >
                 {galleryImages.map((img, idx) => {
                   const isSelected = activeImageIndex === idx;
                   return (
                     <button
-                      key={img.label}
+                      key={`${img.src}-${idx}`}
                       type="button"
                       role="tab"
                       aria-selected={isSelected}
@@ -844,6 +671,7 @@ export default function ProductDetailView({
                             src={img.src}
                             alt={img.alt}
                             fill
+                            loading="eager"
                             sizes="72px"
                             className="object-cover"
                           />
@@ -884,16 +712,16 @@ export default function ProductDetailView({
                 </span>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-[#171717] xl:text-[13px]">
-                    Shiqueen 18K PVD Anti-Tarnish Promise
+                    {pp.assurance_title}
                   </p>
                   <p className="mt-0.5 text-xs font-medium text-[#171717]/70 xl:text-[13px] xl:font-semibold xl:text-[#171717]/82">
-                    100% Waterproof, Sweatproof &amp; Hypoallergenic — Crafted for daily Indian wear.
+                    {pp.assurance_text}
                   </p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-1 rounded-full bg-[#EFE8E4] px-3 py-1 text-[11px] font-semibold text-[#8C671A] xl:px-3.5 xl:py-1.5 xl:text-xs xl:font-bold">
                 <CheckSvg className="h-3 w-3" />
-                <span>Lab Verified</span>
+                <span>{pp.assurance_badge}</span>
               </span>
             </div>
           </div>
@@ -914,15 +742,21 @@ export default function ProductDetailView({
                   href="#customer-reviews"
                   className="inline-flex items-center gap-2 text-xs font-semibold text-[#171717] transition hover:text-[#8C671A] xl:text-[13px] 2xl:text-sm"
                 >
-                  <StarRow rating={product.rating} size="md" />
-                  <span>
-                    {product.rating.toFixed(1)} | {reviews.length} Verified Reviews
-                  </span>
+                  {reviews.length > 0 ? (
+                    <>
+                      <StarRow rating={product.rating} size="md" />
+                      <span>
+                        {product.rating.toFixed(1)} | {reviews.length} Review{reviews.length === 1 ? "" : "s"}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="underline-offset-4 hover:underline">No reviews yet — be the first</span>
+                  )}
                 </a>
 
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1 text-[11px] font-semibold text-[#137333] xl:px-3.5 xl:py-1.5 xl:text-xs xl:font-bold">
-                  <span className="h-2 w-2 rounded-full bg-[#137333]" />
-                  In stock, ready to ship
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold xl:px-3.5 xl:py-1.5 xl:text-xs xl:font-bold ${outOfStock ? "bg-[#FDE8E7] text-[#912018]" : "bg-[#E6F4EA] text-[#137333]"}`}>
+                  <span className={`h-2 w-2 rounded-full ${outOfStock ? "bg-[#912018]" : "bg-[#137333]"}`} />
+                  {outOfStock ? "Out of stock" : pp.in_stock_label}
                 </span>
               </div>
             </div>
@@ -941,7 +775,7 @@ export default function ProductDetailView({
                 </span>
               </div>
               <p className="mt-1.5 text-[11px] font-medium text-[#171717]/65 xl:text-xs xl:font-semibold xl:text-[#171717]/80 2xl:text-[13px]">
-                Inclusive of all taxes • Free Express Pan-India Shipping
+                {pp.price_note}
               </p>
             </div>
 
@@ -990,14 +824,14 @@ export default function ProductDetailView({
                   />
                   <GiftBoxSvg className="h-4 w-4 shrink-0 text-[#8C671A] xl:h-5 xl:w-5" />
                   <span className="text-xs font-semibold text-[#111111] xl:text-[13px] 2xl:text-sm">
-                    Is it a gift? Make it Special{" "}
+                    {pp.gift_wrap_label}{" "}
                     <span className="whitespace-nowrap font-bold">
                       (Rs. {GIFT_WRAP_PRICE})
                     </span>
                   </span>
                 </div>
                 <span className="hidden rounded-full bg-white px-3 py-1 text-[10px] font-bold text-[#8C671A] sm:inline xl:text-[11px]">
-                  Keepsake Wrap
+                  {pp.gift_wrap_badge}
                 </span>
               </label>
 
@@ -1043,9 +877,10 @@ export default function ProductDetailView({
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="flex h-12 flex-1 items-center justify-center rounded-full bg-[#111111] px-6 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-md transition hover:bg-[#8C671A] active:scale-[0.99] xl:h-13 xl:text-[13px] 2xl:h-14 2xl:text-sm"
+                  disabled={outOfStock}
+                  className="flex h-12 flex-1 items-center justify-center rounded-full bg-[#111111] px-6 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-md transition hover:bg-[#8C671A] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-[#171717]/40 xl:h-13 xl:text-[13px] 2xl:h-14 2xl:text-sm"
                 >
-                  ADD TO CART
+                  {outOfStock ? "OUT OF STOCK" : "ADD TO CART"}
                 </button>
               </div>
 
@@ -1053,7 +888,8 @@ export default function ProductDetailView({
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  className="flex h-11 items-center justify-center rounded-full border border-[#111111] bg-[#FAF7F2] px-4 text-xs font-bold uppercase tracking-wider text-[#111111] transition hover:bg-[#111111] hover:text-white xl:h-12 xl:text-[12.5px] 2xl:h-13 2xl:text-[13px]"
+                  disabled={outOfStock}
+                  className="disabled:cursor-not-allowed disabled:opacity-50 flex h-11 items-center justify-center rounded-full border border-[#111111] bg-[#FAF7F2] px-4 text-xs font-bold uppercase tracking-wider text-[#111111] transition hover:bg-[#111111] hover:text-white xl:h-12 xl:text-[12.5px] 2xl:h-13 2xl:text-[13px]"
                 >
                   Buy It Now • Express
                 </button>
@@ -1104,69 +940,59 @@ export default function ProductDetailView({
               )}
             </form>
 
-            {/* Block 7: 4 Luxury SVG Trust Badges Grid */}
-            <div className="grid grid-cols-2 gap-2.5 border-t border-[#E5DEC9] pt-4 sm:grid-cols-4 xl:gap-3 xl:pt-5">
-              <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] p-2.5 text-center xl:p-3">
-                <RefreshExchangeSvg className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
-                <span className="mt-1.5 text-[10px] font-semibold leading-tight text-[#171717] xl:text-[11px] xl:font-bold">
-                  3-day exchange policy
-                </span>
+            {/* Block 7: Trust badges (editable) */}
+            {pp.trust_badges.length > 0 && (
+              <div className="grid grid-cols-2 gap-2.5 border-t border-[#E5DEC9] pt-4 sm:grid-cols-4 xl:gap-3 xl:pt-5">
+                {pp.trust_badges.map((label, i) => {
+                  const Icon = [RefreshExchangeSvg, TruckDeliverySvg, LockSecureSvg, MapPinTrackSvg][i % 4];
+                  return (
+                    <div key={i} className="flex flex-col items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] p-2.5 text-center xl:p-3">
+                      <Icon className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
+                      <span className="mt-1.5 text-[10px] font-semibold leading-tight text-[#171717] xl:text-[11px] xl:font-bold">{label}</span>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] p-2.5 text-center xl:p-3">
-                <TruckDeliverySvg className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
-                <span className="mt-1.5 text-[10px] font-semibold leading-tight text-[#171717] xl:text-[11px] xl:font-bold">
-                  Delivery Guaranteed
-                </span>
-              </div>
-              <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] p-2.5 text-center xl:p-3">
-                <LockSecureSvg className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
-                <span className="mt-1.5 text-[10px] font-semibold leading-tight text-[#171717] xl:text-[11px] xl:font-bold">
-                  Secure Transaction
-                </span>
-              </div>
-              <div className="flex flex-col items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] p-2.5 text-center xl:p-3">
-                <MapPinTrackSvg className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
-                <span className="mt-1.5 text-[10px] font-semibold leading-tight text-[#171717] xl:text-[11px] xl:font-bold">
-                  Easy Order Tracking
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* 3. MIDDLE ROW 1: Full-Width Horizontal Ticket Offers Strip (3 Columns) */}
+      {/* 3. Offers (coupons marked “show as offer” in Admin → Coupons) */}
+      {COUPON_OFFERS.length > 0 && (
       <section className="mx-auto max-w-[1760px] px-4 py-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
         <div className="rounded-3xl border border-[#E5DEC9] bg-white p-5 shadow-xs sm:p-6 xl:p-7">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5DEC9] pb-3.5">
             <div className="flex items-center gap-2">
               <TagOfferSvg className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
               <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-[#111111] sm:text-sm xl:text-[15px]">
-                Exclusive Sitewide Offers &amp; Coupons
+                {pp.offers_title}
               </h2>
             </div>
             <span className="text-[11px] font-semibold text-[#8C671A] xl:text-xs xl:font-bold">
-              Click any code to copy for checkout
+              {pp.offers_subtitle}
             </span>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3.5 md:grid-cols-3 xl:gap-5">
+          <div className={`mt-4 grid grid-cols-1 gap-3.5 xl:gap-5 ${COUPON_OFFERS.length >= 3 ? "md:grid-cols-3" : COUPON_OFFERS.length === 2 ? "md:grid-cols-2" : ""}`}>
             {COUPON_OFFERS.map((offer) => (
               <div
-                key={offer.id}
+                key={offer.code}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2] p-4 transition hover:border-[#C59B27] xl:p-5"
               >
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#111111] px-2.5 py-0.5 text-[10px] font-bold text-white xl:text-[11px]">
-                      {offer.saveLabel}
-                    </span>
+                    {offer.badge && (
+                      <span className="rounded-full bg-[#111111] px-2.5 py-0.5 text-[10px] font-bold text-white xl:text-[11px]">
+                        {offer.badge}
+                      </span>
+                    )}
                     <span className="text-xs font-bold text-[#8C671A] xl:text-[13px]">
-                      {offer.headline}
+                      {offer.title}
                     </span>
                   </div>
                   <p className="text-xs font-semibold text-[#171717] xl:text-[13.5px] xl:font-bold">
-                    {offer.body}
+                    {offer.text}
                   </p>
                   <p className="text-[11px] font-medium text-[#171717]/70 xl:text-xs xl:font-semibold xl:text-[#171717]/82">
                     {offer.subtext}
@@ -1192,6 +1018,7 @@ export default function ProductDetailView({
           </div>
         </div>
       </section>
+      )}
 
       {/* 4. MIDDLE ROW 2: Single-Line 3-Tab Bar + Rich Visual & Tabular Product Experience */}
       <section className="mx-auto max-w-[1760px] px-4 py-6 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
@@ -1209,7 +1036,7 @@ export default function ProductDetailView({
 
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E5DEC9] bg-white px-3.5 py-1 text-[11px] font-bold text-[#171717] shadow-2xs xl:px-4 xl:py-1.5 xl:text-xs">
               <ShieldCheckSvg className="h-3.5 w-3.5 text-[#8C671A] xl:h-4 xl:w-4" />
-              <span>18K PVD Anti-Tarnish Verified</span>
+              <span>{pp.info_badge}</span>
             </span>
           </div>
 
@@ -1307,7 +1134,7 @@ export default function ProductDetailView({
                   <div>
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#E5DEC9] bg-[#FAF7F2] px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8C671A] xl:px-4 xl:py-1.5 xl:text-xs">
                       <SparkleSvg className="h-3.5 w-3.5 xl:h-4 xl:w-4" />
-                      <span>Design Story &amp; Craftsmanship</span>
+                      <span>{pp.story_label}</span>
                     </div>
 
                     <h3 className="mt-3 font-serif text-2xl font-bold text-[#111111] xl:text-[28px] 2xl:text-3xl">
@@ -1335,11 +1162,7 @@ export default function ProductDetailView({
                           Selected Finish Vibe • {selectedFinish}
                         </p>
                         <p className="mt-0.5 text-xs font-semibold text-[#111111] sm:text-sm xl:text-[15px] xl:font-bold">
-                          {selectedFinish === "Rose Gold"
-                            ? "Soft Romantic Blush — Complements warm & neutral undertones"
-                            : selectedFinish === "Silver"
-                              ? "Crisp Mirror Rhodium — Sleek minimal high-shine finish"
-                              : "Rich 18K Golden Glow — Universally flatters Indian skin tones"}
+                          {FINISH_OPTIONS.find((f) => f.name === selectedFinish)?.vibe}
                         </p>
                       </div>
                     </div>
@@ -1348,49 +1171,26 @@ export default function ProductDetailView({
                     </span>
                   </div>
 
-                  {/* "How To Style It" — 3 Occasion Cards with Bespoke SVGs */}
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#111111] xl:text-[13px]">
-                      Style Guide — How Queens Wear It
-                    </p>
-                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 xl:gap-4">
-                      <div className="rounded-2xl border border-[#E5DEC9] bg-white p-3.5 transition hover:border-[#8C671A] xl:p-4">
-                        <div className="flex items-center gap-2 text-[#8C671A]">
-                          <BriefcaseStyleSvg className="h-4 w-4 xl:h-4.5 xl:w-4.5" />
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#111111] xl:text-xs">
-                            Work &amp; Office
-                          </span>
-                        </div>
-                        <p className="mt-1.5 text-xs font-medium leading-snug text-[#171717]/75 xl:mt-2 xl:text-[13px] xl:font-semibold xl:text-[#171717]/85">
-                          Pairs effortlessly with crisp linen shirts, blazers &amp; everyday kurtis.
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-[#E5DEC9] bg-white p-3.5 transition hover:border-[#8C671A] xl:p-4">
-                        <div className="flex items-center gap-2 text-[#8C671A]">
-                          <SparkleSvg className="h-4 w-4 xl:h-4.5 xl:w-4.5" />
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#111111] xl:text-xs">
-                            Date Night
-                          </span>
-                        </div>
-                        <p className="mt-1.5 text-xs font-medium leading-snug text-[#171717]/75 xl:mt-2 xl:text-[13px] xl:font-semibold xl:text-[#171717]/85">
-                          Catches candlelight beautifully on V-necklines, slip dresses &amp; tops.
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-[#E5DEC9] bg-white p-3.5 transition hover:border-[#8C671A] xl:p-4">
-                        <div className="flex items-center gap-2 text-[#8C671A]">
-                          <DiamondGemSvg className="h-4 w-4 xl:h-4.5 xl:w-4.5" />
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#111111] xl:text-xs">
-                            Festive Stack
-                          </span>
-                        </div>
-                        <p className="mt-1.5 text-xs font-medium leading-snug text-[#171717]/75 xl:mt-2 xl:text-[13px] xl:font-semibold xl:text-[#171717]/85">
-                          Ready-made layered look that elevates sarees &amp; Indo-western fits.
-                        </p>
+                  {/* Style guide cards (editable) */}
+                  {pp.style_guide.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#111111] xl:text-[13px]">{pp.style_guide_title}</p>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 xl:gap-4">
+                        {pp.style_guide.map((card, i) => {
+                          const Icon = [BriefcaseStyleSvg, SparkleSvg, DiamondGemSvg][i % 3];
+                          return (
+                            <div key={i} className="rounded-2xl border border-[#E5DEC9] bg-white p-3.5 transition hover:border-[#8C671A] xl:p-4">
+                              <div className="flex items-center gap-2 text-[#8C671A]">
+                                <Icon className="h-4 w-4 xl:h-4.5 xl:w-4.5" />
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#111111] xl:text-xs">{card.title}</span>
+                              </div>
+                              <p className="mt-1.5 text-xs font-medium leading-snug text-[#171717]/75 xl:mt-2 xl:text-[13px] xl:font-semibold xl:text-[#171717]/85">{card.text}</p>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Right 6 Cols: Organized Highlights Table + "Inside Your Shiqueen Box" Visual Grid */}
@@ -1399,11 +1199,11 @@ export default function ProductDetailView({
                   <div className="overflow-hidden rounded-2xl border border-[#E5DEC9]">
                     <div className="flex items-center justify-between border-b border-[#E5DEC9] bg-[#FAF7F2] px-5 py-3.5 xl:px-6 xl:py-4">
                       <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#111111] xl:text-[13px]">
-                        Key Craftsmanship Highlights
+                        {pp.highlights_title}
                       </span>
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#8C671A] xl:text-xs">
                         <ShieldCheckSvg className="h-4 w-4" />
-                        <span>100% Verified</span>
+                        <span>{pp.highlights_badge}</span>
                       </span>
                     </div>
 
@@ -1432,62 +1232,34 @@ export default function ProductDetailView({
                     </div>
                   </div>
 
-                  {/* "What Comes Inside Your Shiqueen Box" 2x2 Visual Unboxing Grid */}
-                  <div className="rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2]/60 p-4 sm:p-5 xl:p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <GiftBoxSvg className="h-4 w-4 shrink-0 text-[#8C671A] xl:h-4.5 xl:w-4.5" />
-                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#111111] xl:text-[13px]">
-                          Inside Your Shiqueen Package
-                        </span>
-                      </div>
-                      <span className="whitespace-nowrap text-[10.5px] font-bold uppercase tracking-wider text-[#8C671A] xl:text-xs">
-                        ✦ Free With Every Order
-                      </span>
-                    </div>
-
-                    <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:mt-4 xl:gap-4">
-                      {[
-                        {
-                          title: "Signature Keepsake Box",
-                          desc: "Rigid magnetic luxury gift box",
-                          icon: <GiftBoxSvg className="h-4 w-4 text-[#8C671A]" />,
-                        },
-                        {
-                          title: "Anti-Tarnish Travel Pouch",
-                          desc: "Soft velvet zip pouch for storage",
-                          icon: <ShieldCheckSvg className="h-4 w-4 text-[#8C671A]" />,
-                        },
-                        {
-                          title: "Microfiber Polishing Cloth",
-                          desc: "Keeps mirror-shine intact for years",
-                          icon: <SparkleSvg className="h-4 w-4 text-[#8C671A]" />,
-                        },
-                        {
-                          title: "Authenticity & Care Card",
-                          desc: "18K PVD quality assurance certificate",
-                          icon: <AwardCertSvg className="h-4 w-4 text-[#8C671A]" />,
-                        },
-                      ].map((item) => (
-                        <div
-                          key={item.title}
-                          className="flex items-start gap-3 rounded-xl border border-[#E5DEC9] bg-white p-3 xl:p-3.5"
-                        >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#E5DEC9] bg-[#FAF7F2] xl:h-9 xl:w-9">
-                            {item.icon}
-                          </span>
-                          <div>
-                            <p className="text-xs font-bold text-[#111111] xl:text-[13.5px]">
-                              {item.title}
-                            </p>
-                            <p className="mt-0.5 text-[11px] font-medium text-[#171717]/70 xl:text-xs xl:font-semibold xl:text-[#171717]/82">
-                              {item.desc}
-                            </p>
-                          </div>
+                  {/* Package contents (editable) */}
+                  {pp.inside_box.length > 0 && (
+                    <div className="rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2]/60 p-4 sm:p-5 xl:p-6">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <GiftBoxSvg className="h-4 w-4 shrink-0 text-[#8C671A] xl:h-4.5 xl:w-4.5" />
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#111111] xl:text-[13px]">{pp.inside_box_title}</span>
                         </div>
-                      ))}
+                        <span className="whitespace-nowrap text-[10.5px] font-bold uppercase tracking-wider text-[#8C671A] xl:text-xs">{pp.inside_box_badge}</span>
+                      </div>
+                      <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:mt-4 xl:gap-4">
+                        {pp.inside_box.map((item, i) => {
+                          const Icon = [GiftBoxSvg, ShieldCheckSvg, SparkleSvg, AwardCertSvg][i % 4];
+                          return (
+                            <div key={i} className="flex items-start gap-3 rounded-xl border border-[#E5DEC9] bg-white p-3 xl:p-3.5">
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#E5DEC9] bg-[#FAF7F2] xl:h-9 xl:w-9">
+                                <Icon className="h-4 w-4 text-[#8C671A]" />
+                              </span>
+                              <div>
+                                <p className="text-xs font-bold text-[#111111] xl:text-[13.5px]">{item.title}</p>
+                                <p className="mt-0.5 text-[11px] font-medium text-[#171717]/70 xl:text-xs xl:font-semibold xl:text-[#171717]/82">{item.text}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1511,7 +1283,7 @@ export default function ProductDetailView({
                       </div>
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E5DEC9] bg-white px-3 py-1 text-[11px] font-bold text-[#8C671A] xl:px-3.5 xl:py-1.5 xl:text-xs">
                         <ShieldCheckSvg className="h-3.5 w-3.5" />
-                        <span>316L Surgical Grade</span>
+                        <span>{pp.spec_sheet_badge}</span>
                       </span>
                     </div>
 
@@ -1542,66 +1314,54 @@ export default function ProductDetailView({
                               </td>
                             </tr>
                           ))}
-                          <tr className="bg-white">
-                            <td className="px-5 py-3.5 xl:px-6 xl:py-4">
-                              <div className="flex items-center gap-2.5">
-                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#E5DEC9] bg-[#FAF7F2] xl:h-8 xl:w-8">
-                                  <ShieldCheckSvg className="h-4 w-4 text-[#8C671A]" />
-                                </span>
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8C671A] sm:text-xs xl:text-[13px]">
-                                  Skin Safety
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-5 py-3.5 font-semibold text-[#111111] xl:px-6 xl:py-4 xl:font-bold">
-                              100% Hypoallergenic — Nickel, Lead &amp; Cadmium Free
-                            </td>
-                          </tr>
+                          {pp.extra_specs.map((spec, i) => (
+                            <tr key={`extra-${i}`} className={(specifications.length + i) % 2 === 0 ? "bg-white" : "bg-[#FAF7F2]/50"}>
+                              <td className="px-5 py-3.5 xl:px-6 xl:py-4">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#E5DEC9] bg-[#FAF7F2] xl:h-8 xl:w-8">
+                                    <ShieldCheckSvg className="h-4 w-4 text-[#8C671A]" />
+                                  </span>
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#8C671A] sm:text-xs xl:text-[13px]">{spec.label}</span>
+                                </div>
+                              </td>
+                              <td className="px-5 py-3.5 font-semibold text-[#111111] xl:px-6 xl:py-4 xl:font-bold">{spec.value}</td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
 
-                  {/* 2 Visual Quality Meters Below Spec Table */}
-                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:gap-4">
-                    <div className="flex items-center justify-between rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2]/70 p-4 xl:p-5">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#8C671A] xl:text-[11px]">
-                          Comfort Weight Feel
-                        </p>
-                        <p className="mt-1 text-xs font-bold text-[#111111] sm:text-sm xl:text-[15px]">
-                          Featherlight • Zero Neck Strain
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-[#111111] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white xl:px-3.5 xl:py-1.5 xl:text-[11px]">
-                        24/7 Wear
-                      </span>
+                  {/* Quality cards (editable) */}
+                  {pp.quality_meters.length > 0 && (
+                    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:gap-4">
+                      {pp.quality_meters.map((m, i) => (
+                        <div key={i} className="flex items-center justify-between gap-3 rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2]/70 p-4 xl:p-5">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#8C671A] xl:text-[11px]">{m.label}</p>
+                            <p className="mt-1 text-xs font-bold text-[#111111] sm:text-sm xl:text-[15px]">{m.value}</p>
+                          </div>
+                          {m.badge && (
+                            <span className="shrink-0 rounded-full bg-[#111111] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white xl:px-3.5 xl:py-1.5 xl:text-[11px]">
+                              {m.badge}
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
-
-                    <div className="flex items-center justify-between rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2]/70 p-4 xl:p-5">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#8C671A] xl:text-[11px]">
-                          Water Resistance Grade
-                        </p>
-                        <p className="mt-1 text-xs font-bold text-[#111111] sm:text-sm xl:text-[15px]">
-                          5/5 Rating • Shower &amp; Sweat Proof
-                        </p>
-                      </div>
-                      <StarRow rating={5} size="sm" />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Right 5 Cols: "Shiqueen 18K PVD vs Ordinary Brass Jewelry" Comparison Matrix */}
-                <div className="lg:col-span-5">
+                <div className={`lg:col-span-5 ${pp.comparison.length === 0 ? "hidden" : ""}`}>
                   <div className="overflow-hidden rounded-2xl border border-[#E5DEC9] bg-white">
                     <div className="border-b border-[#E5DEC9] bg-[#111111] px-5 py-4 text-white xl:px-6 xl:py-5">
                       <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#C59B27] xl:text-xs">
                         <AwardCertSvg className="h-4 w-4" />
-                        <span>The Shiqueen Difference</span>
+                        <span>{pp.comparison_eyebrow}</span>
                       </div>
                       <h3 className="mt-1 font-serif text-lg font-bold text-white xl:text-xl">
-                        Shiqueen 18K PVD vs. Regular Jewelry
+                        {pp.comparison_title}
                       </h3>
                     </div>
 
@@ -1610,43 +1370,17 @@ export default function ProductDetailView({
                         <tr className="border-b border-[#E5DEC9] bg-[#FAF7F2] text-[10px] font-bold uppercase tracking-wider text-[#171717]/75 xl:text-[11px] xl:text-[#171717]/85">
                           <th className="px-4 py-3 xl:px-5 xl:py-3.5">Quality Factor</th>
                           <th className="px-3 py-3 text-center text-[#137333] xl:py-3.5">
-                            Shiqueen PVD
+                            {pp.comparison_ours_label}
                           </th>
                           <th className="px-3 py-3 text-center text-[#B91C1C] xl:py-3.5">
-                            Ordinary Brass
+                            {pp.comparison_others_label}
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E5DEC9]">
-                        {[
-                          {
-                            feature: "Water & Sweat Safe",
-                            shiqueen: "100% Shower Safe",
-                            ordinary: "Turns black in days",
-                          },
-                          {
-                            feature: "Skin Reaction",
-                            shiqueen: "Zero Green Marks",
-                            ordinary: "Itchy / Green skin",
-                          },
-                          {
-                            feature: "Shine Lifespan",
-                            shiqueen: "2–3+ Years Daily",
-                            ordinary: "Fades in 2 weeks",
-                          },
-                          {
-                            feature: "Core Metal",
-                            shiqueen: "316L Surgical Steel",
-                            ordinary: "Cheap Alloy / Brass",
-                          },
-                          {
-                            feature: "Perfume Tolerance",
-                            shiqueen: "High PVD Seal",
-                            ordinary: "Instant tarnish",
-                          },
-                        ].map((row, idx) => (
+                        {pp.comparison.map((row, idx) => (
                           <tr
-                            key={row.feature}
+                            key={idx}
                             className={
                               idx % 2 === 0 ? "bg-white" : "bg-[#FAF7F2]/45"
                             }
@@ -1657,13 +1391,13 @@ export default function ProductDetailView({
                             <td className="px-3 py-3.5 text-center xl:py-4">
                               <span className="inline-flex items-center gap-1 rounded-full bg-[#E6F4EA] px-2.5 py-1 text-[11px] font-bold text-[#137333] xl:px-3 xl:text-xs">
                                 <CheckSvg className="h-3 w-3 shrink-0" />
-                                <span>{row.shiqueen}</span>
+                                <span>{row.ours}</span>
                               </span>
                             </td>
                             <td className="px-3 py-3.5 text-center xl:py-4">
                               <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2]/70 px-2.5 py-1 text-[11px] font-semibold text-[#B91C1C] xl:px-3 xl:text-xs xl:font-bold">
                                 <XCrossSvg className="h-3 w-3 shrink-0" />
-                                <span>{row.ordinary}</span>
+                                <span>{row.others}</span>
                               </span>
                             </td>
                           </tr>
@@ -1686,38 +1420,23 @@ export default function ProductDetailView({
                     <div className="flex items-center gap-2">
                       <TruckDeliverySvg className="h-4 w-4 text-[#8C671A] xl:h-4.5 xl:w-4.5" />
                       <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[#111111] sm:text-sm xl:text-[15px]">
-                        Fast-Track Pan-India Delivery Journey
+                        {pp.delivery_title}
                       </h3>
                     </div>
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1 text-[11px] font-bold text-[#137333] xl:px-3.5 xl:py-1.5 xl:text-xs">
                       <CheckSvg className="h-3 w-3" />
-                      <span>Free Express Shipping &amp; COD Available</span>
+                      <span>{pp.delivery_badge}</span>
                     </span>
                   </div>
 
                   <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:gap-5">
-                    {[
-                      {
-                        step: "Step 01 • Today",
-                        title: "Instant Order Confirmation",
-                        desc: "Order locked immediately with live WhatsApp & SMS tracking link.",
-                        icon: <LockSecureSvg className="h-4 w-4 text-[#8C671A]" />,
-                      },
-                      {
-                        step: "Step 02 • Within 24 Hours",
-                        title: "2-Stage Quality Check & Dispatch",
-                        desc: "Hand-inspected for finish perfection & packed in Shiqueen keepsake box.",
-                        icon: <ClockDispatchSvg className="h-4 w-4 text-[#8C671A]" />,
-                      },
-                      {
-                        step: "Step 03 • 1–3 Working Days",
-                        title: "Express Doorstep Delivery",
-                        desc: "Delivered via BlueDart / Delhivery Air + 3-Day Easy Exchange window.",
-                        icon: <TruckDeliverySvg className="h-4 w-4 text-[#8C671A]" />,
-                      },
-                    ].map((item) => (
+                    {pp.delivery_steps.map((item, i) => ({
+                      ...item,
+                      desc: item.text,
+                      icon: [<LockSecureSvg key="a" className="h-4 w-4 text-[#8C671A]" />, <ClockDispatchSvg key="b" className="h-4 w-4 text-[#8C671A]" />, <TruckDeliverySvg key="c" className="h-4 w-4 text-[#8C671A]" />][i % 3],
+                    })).map((item) => (
                       <div
-                        key={item.step}
+                        key={`${item.step}-${item.title}`}
                         className="flex items-start gap-3.5 rounded-xl border border-[#E5DEC9] bg-white p-4 shadow-2xs xl:p-5"
                       >
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] xl:h-10 xl:w-10">
@@ -1746,43 +1465,17 @@ export default function ProductDetailView({
                     <div className="flex items-center gap-2 border-b border-[#E5DEC9] bg-[#FAF7F2] px-5 py-3.5 xl:px-6 xl:py-4">
                       <RefreshExchangeSvg className="h-4 w-4 text-[#8C671A]" />
                       <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-[#111111] xl:text-[13px]">
-                        Shipping &amp; Exchange Policy
+                        {pp.policy_title}
                       </h4>
                     </div>
                     <table className="w-full border-collapse text-left text-xs sm:text-sm xl:text-[14.5px]">
                       <tbody className="divide-y divide-[#E5DEC9]">
-                        <tr className="bg-white">
-                          <th className="w-2/5 px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#8C671A] xl:px-6 xl:py-4 xl:text-xs">
-                            Metro Delivery
-                          </th>
-                          <td className="px-5 py-3.5 font-semibold text-[#111111] xl:px-6 xl:py-4 xl:font-bold">
-                            1–3 Working Days Express Air
-                          </td>
-                        </tr>
-                        <tr className="bg-[#FAF7F2]/50">
-                          <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#8C671A] xl:px-6 xl:py-4 xl:text-xs">
-                            Rest of India
-                          </th>
-                          <td className="px-5 py-3.5 font-semibold text-[#111111] xl:px-6 xl:py-4 xl:font-bold">
-                            3–5 Working Days (26,000+ Pincodes)
-                          </td>
-                        </tr>
-                        <tr className="bg-white">
-                          <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#8C671A] xl:px-6 xl:py-4 xl:text-xs">
-                            Prepaid Benefit
-                          </th>
-                          <td className="px-5 py-3.5 font-semibold text-[#137333] xl:px-6 xl:py-4 xl:font-bold">
-                            Free Shipping + Extra 10% OFF
-                          </td>
-                        </tr>
-                        <tr className="bg-[#FAF7F2]/50">
-                          <th className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#8C671A] xl:px-6 xl:py-4 xl:text-xs">
-                            Exchange Policy
-                          </th>
-                          <td className="px-5 py-3.5 font-semibold text-[#111111] xl:px-6 xl:py-4 xl:font-bold">
-                            3-Day Doorstep Pickup &amp; Instant Replacement
-                          </td>
-                        </tr>
+                        {pp.policy_rows.map((row, i) => (
+                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-[#FAF7F2]/50"}>
+                            <th className="w-2/5 px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#8C671A] xl:px-6 xl:py-4 xl:text-xs">{row.label}</th>
+                            <td className="px-5 py-3.5 font-semibold text-[#111111] xl:px-6 xl:py-4 xl:font-bold">{row.value}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -1797,21 +1490,16 @@ export default function ProductDetailView({
                         </span>
                         <div>
                           <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-[#137333] xl:text-[13px]">
-                            Jewelry Care Do&apos;s
+                            {pp.care_dos_title}
                           </h4>
                           <p className="text-[11px] font-medium text-[#171717]/75 xl:text-xs xl:font-semibold xl:text-[#171717]/85">
-                            How to keep 18K shine forever
+                            {pp.care_dos_subtitle}
                           </p>
                         </div>
                       </div>
 
                       <ul className="mt-4 space-y-2.5 text-xs font-semibold text-[#111111] xl:text-[13.5px]">
-                        {[
-                          "Wear freely in shower, gym sweat & monsoon rain",
-                          "Apply perfume & lotions first, let dry 60 secs before wearing",
-                          "Wipe gently with the complimentary microfiber cloth after wear",
-                          "Store flat inside the Shiqueen zip-pouch when travelling",
-                        ].map((point) => (
+                        {pp.care_dos.map((point) => (
                           <li key={point} className="flex items-start gap-2">
                             <CheckSvg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#137333] xl:mt-1 xl:h-4 xl:w-4" />
                             <span>{point}</span>
@@ -1828,21 +1516,16 @@ export default function ProductDetailView({
                         </span>
                         <div>
                           <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-[#B91C1C] xl:text-[13px]">
-                            Care Don&apos;ts
+                            {pp.care_donts_title}
                           </h4>
                           <p className="text-[11px] font-medium text-[#171717]/75 xl:text-xs xl:font-semibold xl:text-[#171717]/85">
-                            Things to avoid for scratch protection
+                            {pp.care_donts_subtitle}
                           </p>
                         </div>
                       </div>
 
                       <ul className="mt-4 space-y-2.5 text-xs font-semibold text-[#111111] xl:text-[13.5px]">
-                        {[
-                          "Don't spray concentrated alcohol perfume directly onto the chain",
-                          "Don't toss loose with sharp metal keys or coins without a pouch",
-                          "Don't use harsh chemical silver dips or abrasive brushes",
-                          "Don't pull delicate layered chains forcefully while unclasping",
-                        ].map((point) => (
+                        {pp.care_donts.map((point) => (
                           <li key={point} className="flex items-start gap-2">
                             <XCrossSvg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#B91C1C] xl:mt-1 xl:h-4 xl:w-4" />
                             <span>{point}</span>
@@ -1858,404 +1541,46 @@ export default function ProductDetailView({
         </div>
       </section>
 
-      {/* 5. Editorial "FEATURED IN" Warm Beige Strip (Swashaa Style) */}
-      <section className="my-8 border-y border-[#E5DEC9] bg-[#EFE8E4] py-8">
-        <div className="mx-auto max-w-[1760px] px-4 text-center sm:px-6 lg:px-12">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#8C671A] xl:text-xs">
-            Loved By Fashion Editors &amp; 50,000+ Queens
-          </p>
-          <h2 className="mt-1 font-serif text-2xl font-semibold text-[#111111] xl:text-3xl">
-            <span className="swashaa-highlight">FEATURED IN</span>
-          </h2>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-8 sm:gap-14 lg:gap-20">
-            {["WEDDING VOWS", "MANIFEST", "FEMINA", "ELLE INDIA", "HELLO!"].map(
-              (pub) => (
-                <span
-                  key={pub}
-                  className="font-serif text-lg font-bold tracking-[0.18em] text-[#171717]/80 sm:text-xl xl:text-2xl"
-                >
+      {/* 5. "Featured in" strip (hidden when the list is empty) */}
+      {pp.featured_in.length > 0 && (
+        <section className="my-8 border-y border-[#E5DEC9] bg-[#EFE8E4] py-8">
+          <div className="mx-auto max-w-[1760px] px-4 text-center sm:px-6 lg:px-12">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#8C671A] xl:text-xs">{pp.featured_in_eyebrow}</p>
+            <h2 className="mt-1 font-serif text-2xl font-semibold text-[#111111] xl:text-3xl">
+              <span className="swashaa-highlight">FEATURED IN</span>
+            </h2>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-8 sm:gap-14 lg:gap-20">
+              {pp.featured_in.map((pub) => (
+                <span key={pub} className="font-serif text-lg font-bold tracking-[0.18em] text-[#171717]/80 sm:text-xl xl:text-2xl">
                   {pub}
                 </span>
-              )
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Customer Reviews Section (Swashaa Judge.me Style — 100% SVG Icons) */}
-      <section
-        id="customer-reviews"
-        className="mx-auto max-w-[1760px] scroll-mt-24 px-4 py-8 sm:px-6 lg:px-12 xl:px-16 2xl:px-20"
-      >
-        <div className="text-center">
-          <h2 className="font-serif text-3xl font-semibold tracking-wide text-[#111111] sm:text-4xl">
-            <span className="swashaa-highlight">CUSTOMER REVIEWS</span>
-          </h2>
-        </div>
-
-        <div className="mt-8 rounded-3xl border border-[#E5DEC9] bg-white p-5 shadow-xs sm:p-8">
-          {/* Top Summary Row */}
-          <div className="flex flex-col items-start justify-between gap-6 border-b border-[#E5DEC9] pb-6 md:flex-row md:items-center">
-            <div className="flex flex-wrap items-center gap-6">
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <span className="font-serif text-4xl font-bold text-[#111111]">
-                    {product.rating.toFixed(1)}
-                  </span>
-                  <div>
-                    <StarRow rating={product.rating} size="md" />
-                    <p className="mt-0.5 text-xs font-medium text-[#171717]/70 xl:text-[13px] xl:font-semibold xl:text-[#171717]/82">
-                      Based on {product.reviewCount} verified reviews
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Customer Uploaded Photos Strip */}
-              <div className="border-l border-[#E5DEC9] pl-6">
-                <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#8C671A]">
-                  <CameraPhotoSvg className="h-3.5 w-3.5" />
-                  <span>Customer Photos ({galleryImages.length})</span>
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  {galleryImages.map((img, i) => (
-                    <button
-                      key={img.label}
-                      type="button"
-                      onClick={() => setZoomModalIndex(i)}
-                      className="relative h-12 w-12 overflow-hidden rounded-lg border border-[#E5DEC9] transition hover:scale-105 hover:border-[#8C671A]"
-                    >
-                      <Image
-                        src={img.src}
-                        alt={img.alt}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Write a Review Black Pill CTA */}
-            <button
-              type="button"
-              onClick={() => setShowWriteReview((v) => !v)}
-              className="rounded-full bg-[#111111] px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#8C671A]"
-            >
-              {showWriteReview ? "Cancel Review" : "Write a review"}
-            </button>
-          </div>
-
-          {/* Interactive Write a Review Form */}
-          {showWriteReview && (
-            <form
-              onSubmit={handleSubmitReview}
-              className="mt-6 rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2] p-5"
-            >
-              <h3 className="font-serif text-xl font-bold text-[#111111]">
-                Share Your Experience with {product.name}
-              </h3>
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717]">
-                    Your Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newReviewName}
-                    onChange={(e) => setNewReviewName(e.target.value)}
-                    placeholder="e.g. Smita Sharma"
-                    className="mt-1 w-full rounded-xl border border-[#E5DEC9] bg-white px-3.5 py-2 text-xs focus:border-[#8C671A] focus:outline-hidden"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717]">
-                    City / Location
-                  </label>
-                  <input
-                    type="text"
-                    value={newReviewLocation}
-                    onChange={(e) => setNewReviewLocation(e.target.value)}
-                    placeholder="e.g. Mumbai"
-                    className="mt-1 w-full rounded-xl border border-[#E5DEC9] bg-white px-3.5 py-2 text-xs focus:border-[#8C671A] focus:outline-hidden"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717]">
-                    Rating
-                  </label>
-                  <select
-                    value={newReviewRating}
-                    onChange={(e) => setNewReviewRating(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-[#E5DEC9] bg-white px-3.5 py-2 text-xs font-semibold focus:border-[#8C671A] focus:outline-hidden"
-                  >
-                    <option value={5}>5 Stars — Loved It</option>
-                    <option value={4}>4 Stars — Very Good</option>
-                    <option value={3}>3 Stars — Good</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-xs font-semibold text-[#171717]">
-                  Review Headline
-                </label>
-                <input
-                  type="text"
-                  value={newReviewTitle}
-                  onChange={(e) => setNewReviewTitle(e.target.value)}
-                  placeholder="e.g. Cute dainty piece! Zero tarnish"
-                  className="mt-1 w-full rounded-xl border border-[#E5DEC9] bg-white px-3.5 py-2 text-xs focus:border-[#8C671A] focus:outline-hidden"
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-xs font-semibold text-[#171717]">
-                  Your Review *
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={newReviewBody}
-                  onChange={(e) => setNewReviewBody(e.target.value)}
-                  placeholder="Tell other Queens about the shine, comfort, or gifting experience..."
-                  className="mt-1 w-full rounded-xl border border-[#E5DEC9] bg-white px-3.5 py-2 text-xs focus:border-[#8C671A] focus:outline-hidden"
-                />
-              </div>
-
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="submit"
-                  className="rounded-full bg-[#111111] px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#8C671A]"
-                >
-                  Submit Verified Review
-                </button>
-              </div>
-            </form>
-          )}
-
-          {reviewSubmittedBanner && (
-            <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#E6F4EA] px-4 py-3 text-xs font-semibold text-[#137333]">
-              <CheckSvg className="h-4 w-4" />
-              <span>Thank you! Your review has been added below.</span>
-            </div>
-          )}
-
-          {/* Tabs + Filters & Sort Row */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveReviewTab("product")}
-                className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[11px] font-bold transition sm:px-4 sm:text-xs ${
-                  activeReviewTab === "product"
-                    ? "bg-[#111111] text-white"
-                    : "bg-[#FAF7F2] text-[#171717]/70 hover:text-[#111111]"
-                }`}
-              >
-                Product reviews ({reviews.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveReviewTab("store")}
-                className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[11px] font-bold transition sm:px-4 sm:text-xs ${
-                  activeReviewTab === "store"
-                    ? "bg-[#111111] text-white"
-                    : "bg-[#FAF7F2] text-[#171717]/70 hover:text-[#111111]"
-                }`}
-              >
-                Store reviews (440+)
-              </button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowReviewFilters((f) => !f)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#111111] bg-[#111111] px-4 py-1.5 text-xs font-semibold text-white transition hover:border-[#8C671A] hover:bg-[#8C671A]"
-              >
-                <FilterSlidersSvg className="h-3.5 w-3.5" />
-                <span>Filters</span>
-              </button>
-
-              <select
-                aria-label="Sort reviews"
-                value={reviewSort}
-                onChange={(e) =>
-                  setReviewSort(
-                    e.target.value as "pictures" | "recent" | "highest" | "helpful"
-                  )
-                }
-                className="rounded-full border border-[#E5DEC9] bg-[#FAF7F2] px-4 py-1.5 text-xs font-semibold text-[#171717] focus:border-[#8C671A] focus:outline-hidden"
-              >
-                <option value="pictures">Sort: Pictures First</option>
-                <option value="recent">Sort: Most Recent</option>
-                <option value="highest">Sort: Highest Rating</option>
-                <option value="helpful">Sort: Most Helpful</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Expandable Rating Filter Pills */}
-          {showReviewFilters && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl bg-[#FAF7F2] p-3.5">
-              <span className="mr-2 text-xs font-semibold text-[#171717]/70">
-                Filter by:
-              </span>
-              {[
-                { key: "all" as const, label: "All Reviews" },
-                { key: "photos" as const, label: "With Photos" },
-                { key: 5 as const, label: "5 Stars" },
-                { key: 4 as const, label: "4 Stars" },
-              ].map((pill) => (
-                <button
-                  key={String(pill.key)}
-                  type="button"
-                  onClick={() => setRatingFilter(pill.key)}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold transition ${
-                    ratingFilter === pill.key
-                      ? "bg-[#111111] text-white"
-                      : "border border-[#E5DEC9] bg-white text-[#171717] hover:border-[#8C671A]"
-                  }`}
-                >
-                  {pill.key === "photos" && (
-                    <CameraPhotoSvg className="h-3 w-3" />
-                  )}
-                  <span>{pill.label}</span>
-                </button>
               ))}
             </div>
-          )}
-
-          {/* Review Cards Grid */}
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5">
-            {filteredAndSortedReviews.map((rev) => (
-              <article
-                key={rev.id}
-                className="flex flex-col justify-between rounded-2xl border border-[#E5DEC9] bg-[#FAF7F2]/60 p-4 sm:p-5 xl:p-6"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFE8E4] font-serif text-sm font-bold text-[#8C671A] xl:h-11 xl:w-11">
-                        {rev.initials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-xs font-bold text-[#111111] xl:text-sm">
-                            {rev.author}
-                          </span>
-                          {rev.verified && (
-                            <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-[#E6F4EA] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#137333] xl:text-[10px]">
-                              <CheckSvg className="h-2.5 w-2.5" />
-                              <span>Verified</span>
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] font-medium text-[#171717]/65 xl:text-xs xl:font-semibold xl:text-[#171717]/80">
-                          {rev.location} • {rev.date}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="hidden shrink-0 sm:block">
-                      <StarRow rating={rev.rating} />
-                    </div>
-                  </div>
-
-                  {/* Mobile Star Rating Row (Prevents overflowing card border on 360px screens) */}
-                  <div className="mt-2.5 sm:hidden">
-                    <StarRow rating={rev.rating} />
-                  </div>
-
-                  <h3 className="mt-2 text-sm font-bold text-[#111111] sm:mt-3.5 xl:text-base">
-                    {rev.title}
-                  </h3>
-                  <p className="mt-1.5 text-xs font-medium leading-relaxed text-[#171717]/75 xl:text-[13.5px] xl:font-semibold xl:text-[#171717]/85">
-                    {rev.body}
-                  </p>
-
-                  {rev.images && rev.images.length > 0 && (
-                    <div className="mt-3.5 flex items-center gap-2.5">
-                      {rev.images.map((imgUrl, idx) => (
-                        <button
-                          key={`${rev.id}-img-${idx}`}
-                          type="button"
-                          onClick={() =>
-                            setZoomModalIndex(idx % galleryImages.length)
-                          }
-                          className="relative h-16 w-16 overflow-hidden rounded-xl border border-[#E5DEC9] bg-white transition hover:scale-105 xl:h-18 xl:w-18"
-                        >
-                          <Image
-                            src={imgUrl}
-                            alt={`Customer photo by ${rev.author}`}
-                            fill
-                            sizes="72px"
-                            className="object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-2 rounded-xl border border-[#E5DEC9] bg-white px-3 py-2 xl:px-4 xl:py-2.5">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md border border-[#E5DEC9]">
-                      <Image
-                        src={product.primaryImage}
-                        alt={product.name}
-                        fill
-                        sizes="32px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <span className="text-[10.5px] font-medium leading-tight text-[#171717]/75 sm:text-[11px] xl:text-xs xl:font-semibold xl:text-[#171717]/85">
-                      Review for{" "}
-                      <strong className="font-bold text-[#111111]">
-                        {product.name}
-                      </strong>
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setHelpfulClickedIds((prev) => ({
-                        ...prev,
-                        [rev.id]: !prev[rev.id],
-                      }))
-                    }
-                    className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-semibold transition xl:px-3 xl:text-[11px] ${
-                      helpfulClickedIds[rev.id]
-                        ? "bg-[#111111] text-white"
-                        : "bg-[#FAF7F2] text-[#171717]/75 hover:text-[#111111] xl:font-bold"
-                    }`}
-                  >
-                    <ThumbUpSvg className="h-3 w-3 shrink-0" />
-                    <span>
-                      Helpful ({rev.helpfulCount + (helpfulClickedIds[rev.id] ? 1 : 0)})
-                    </span>
-                  </button>
-                </div>
-              </article>
-            ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* 6. Customer reviews (real, moderated in Admin → Reviews) */}
+      <ReviewsSection
+        productId={product.id}
+        productName={product.name}
+        rating={product.rating}
+        reviews={reviews}
+        storeReviews={storeReviews}
+        storeTotal={storeReviewTotal}
+        enabled={site.settings.reviews_enabled}
+      />
 
       {/* 7. Cross-Sell Section: "YOU MAY ALSO LIKE" */}
+      {relatedProducts.length > 0 && (
       <section className="mx-auto max-w-[1760px] px-4 py-10 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8C671A]">
-              Complete Your Royal Look
+              {pp.related_eyebrow}
             </p>
             <h2 className="mt-1 font-serif text-2xl font-semibold text-[#111111] sm:text-3xl">
-              <span className="swashaa-highlight">YOU MAY ALSO LIKE</span>
+              <span className="swashaa-highlight">{pp.related_title}</span>
             </h2>
           </div>
           {collection && (
@@ -2274,6 +1599,7 @@ export default function ProductDetailView({
           ))}
         </div>
       </section>
+      )}
 
       {/* 8. Swashaa-Style Sticky Floating Bottom-Right Add-to-Cart Bar (Desktop Only — Hidden on Mobile) */}
       {showStickyBar && (
@@ -2299,9 +1625,10 @@ export default function ProductDetailView({
           <button
             type="button"
             onClick={handleAddToCart}
-            className="rounded-full bg-[#111111] px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-[#8C671A]"
+            disabled={outOfStock}
+            className="rounded-full bg-[#111111] px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-[#8C671A] disabled:cursor-not-allowed disabled:bg-[#171717]/40"
           >
-            ADD TO CART
+            {outOfStock ? "OUT OF STOCK" : "ADD TO CART"}
           </button>
         </div>
       )}
@@ -2339,12 +1666,12 @@ export default function ProductDetailView({
 
             <div className="mt-3 flex items-center justify-between px-2">
               <span className="text-xs font-bold text-[#171717]">
-                {galleryImages[zoomModalIndex].label} ({zoomModalIndex + 1} of 2)
+                {galleryImages[zoomModalIndex].label} ({zoomModalIndex + 1} of {galleryImages.length})
               </span>
               <div className="flex gap-2">
                 {galleryImages.map((img, i) => (
                   <button
-                    key={img.label}
+                    key={`${img.src}-${i}`}
                     type="button"
                     onClick={() => setZoomModalIndex(i)}
                     className={`rounded-full px-3 py-1 text-xs font-semibold transition ${

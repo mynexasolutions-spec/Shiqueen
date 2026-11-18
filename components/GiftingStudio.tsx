@@ -2,348 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { SOCIAL_LINKS } from "@/lib/brand-data";
 import { WhatsAppIcon } from "@/components/Header";
-
-interface GiftType {
-  id: string;
-  label: string;
-  subtitle: string;
-  badge?: string;
-  startingPrice: string;
-  basePrice: number;
-  image: string;
-  features: string[];
-}
-
-interface Occasion {
-  id: string;
-  label: string;
-  subtitle: string;
-  themeNote: string;
-  iconTag: string;
-}
-
-export interface AddonOption {
-  id: string;
-  label: string;
-  desc: string;
-  defaultChecked: boolean;
-  estPrice: number;
-}
-
-const GIFT_TYPES: readonly GiftType[] = [
-  {
-    id: "hamper",
-    label: "Luxury Gift Hamper",
-    subtitle: "Rigid keepsake velvet box with warm starlight glow & gourmet golden chocolates",
-    badge: "Most Popular",
-    startingPrice: "Starts ₹1,499",
-    basePrice: 1499,
-    image: "/images/categories/cat-hampers.jpg",
-    features: [
-      "Rigid velvet-lined keepsake gift box",
-      "18K Gold anti-tarnish watch or jewelry",
-      "Ferrero Rocher & warm fairy lights",
-    ],
-  },
-  {
-    id: "bouquet",
-    label: "Signature Jewelry Bouquet",
-    subtitle: "Everlasting floral wrap with waterproof gold necklace & satin ribbons",
-    badge: "Viral Trend",
-    startingPrice: "Starts ₹1,199",
-    basePrice: 1199,
-    image: "/images/categories/cat-bouquets.jpg",
-    features: [
-      "Everlasting preserved silk blooms",
-      "18K Gold-toned anti-tarnish pendant set",
-      "Pastel frosted wrap & golden satin bow",
-    ],
-  },
-  {
-    id: "combo",
-    label: "Grand Gifting Combo",
-    subtitle: "The ultimate celebration: luxury keepsake box paired with floral bouquet",
-    badge: "Ultimate Luxury",
-    startingPrice: "Starts ₹2,599",
-    basePrice: 2599,
-    image: "/images/categories/cat-festive.jpg",
-    features: [
-      "Full luxury gift hamper + mini bouquet",
-      "Complete 18K demi-fine watch & jewelry set",
-      "Handwritten wax-sealed letter & lights",
-    ],
-  },
-] as const;
-
-const OCCASIONS: readonly Occasion[] = [
-  {
-    id: "birthday",
-    label: "Birthday Special",
-    subtitle: "Celebrate with golden sparkle, birthday wish card & celebratory unboxing glow",
-    themeNote: "Birthday wish card & warm celebratory glow",
-    iconTag: "Birthday Special",
-  },
-  {
-    id: "anniversary",
-    label: "Anniversary / Romance",
-    subtitle: "Heartfelt luxury, wax-sealed love letter & timeless keepsake demi-fine jewelry",
-    themeNote: "Wax-sealed love letter & keepsake jewelry",
-    iconTag: "Romantic Romance",
-  },
-  {
-    id: "bridesmaid",
-    label: "Bridesmaid & Wedding",
-    subtitle: "For bride squad proposals, bridal pampering & unforgettable wedding party favors",
-    themeNote: "Will you be my bridesmaid? proposal theme",
-    iconTag: "Bridal Party",
-  },
-  {
-    id: "queen",
-    label: "Self-Care & Queen Gift",
-    subtitle: "Empowering self-love unboxing curated to crown yourself with 18K luxury pieces",
-    themeNote: "Crown yourself with 18K anti-tarnish pieces",
-    iconTag: "Self-Love Curation",
-  },
-] as const;
-
-// Dynamic Add-ons Matrix tailored to Creation & Occasion
-function getAddons(typeId: string, occasionId: string): AddonOption[] {
-  if (typeId === "hamper") {
-    if (occasionId === "bridesmaid") {
-      return [
-        {
-          id: "watch",
-          label: "18K Gold Jubilee Watch",
-          desc: "Waterproof demi-fine luxury timepiece",
-          defaultChecked: true,
-          estPrice: 499,
-        },
-        {
-          id: "bridesmaid_card",
-          label: '"Will You Be My Bridesmaid?" Card',
-          desc: "Gold foil calligraphy invitation note",
-          defaultChecked: true,
-          estPrice: 0,
-        },
-        {
-          id: "scrunchie",
-          label: "Champagne Satin Silk Scrunchie",
-          desc: "Handcrafted bridal accessory keepsake",
-          defaultChecked: true,
-          estPrice: 149,
-        },
-        {
-          id: "chocolates",
-          label: "Ferrero Rocher Golden 4-Pack",
-          desc: "Sweet celebratory golden treats",
-          defaultChecked: true,
-          estPrice: 199,
-        },
-        {
-          id: "candle",
-          label: "French Vanilla Soy Wax Candle",
-          desc: "Aromatic relaxing glow in glass jar",
-          defaultChecked: false,
-          estPrice: 249,
-        },
-        {
-          id: "engraving",
-          label: "Custom Name Foil on Box Lid",
-          desc: "Personalized metallic name embossing",
-          defaultChecked: false,
-          estPrice: 199,
-        },
-      ];
-    }
-
-    return [
-      {
-        id: "watch",
-        label: "18K Gold Jubilee Watch",
-        desc: "Waterproof demi-fine luxury timepiece",
-        defaultChecked: true,
-        estPrice: 499,
-      },
-      {
-        id: "chocolates",
-        label: "Ferrero Rocher Golden Treats",
-        desc: "4-pc crisp hazelnut chocolates",
-        defaultChecked: true,
-        estPrice: 199,
-      },
-      {
-        id: "lights",
-        label: "Warm Starlight Fairy Lights",
-        desc: "Magical warm unboxing glow",
-        defaultChecked: true,
-        estPrice: 99,
-      },
-      {
-        id: "letter",
-        label: "Wax-Sealed Handwritten Letter",
-        desc: "Custom calligraphy heartfelt note",
-        defaultChecked: true,
-        estPrice: 0,
-      },
-      {
-        id: "candle",
-        label: "French Vanilla Soy Candle",
-        desc: "Hand-poured aromatherapeutic candle",
-        defaultChecked: false,
-        estPrice: 249,
-      },
-      {
-        id: "engraving",
-        label: "Custom Gold Foil Name on Lid",
-        desc: "Personalized recipient name on box",
-        defaultChecked: false,
-        estPrice: 199,
-      },
-    ];
-  }
-
-  if (typeId === "bouquet") {
-    if (occasionId === "bridesmaid") {
-      return [
-        {
-          id: "jewelry",
-          label: "18K Demi-Fine Pendant & Studs",
-          desc: "Waterproof anti-tarnish jewelry set",
-          defaultChecked: true,
-          estPrice: 399,
-        },
-        {
-          id: "blooms",
-          label: "Everlasting Preserved Silk Blooms",
-          desc: "Never wilts, stays fresh forever",
-          defaultChecked: true,
-          estPrice: 0,
-        },
-        {
-          id: "squad_tag",
-          label: '"Bride Squad" Satin Ribbon Tag',
-          desc: "Custom frosted wrapping & bow",
-          defaultChecked: true,
-          estPrice: 99,
-        },
-        {
-          id: "spritz",
-          label: "Scented Rose Bloom Mist Spritz",
-          desc: "Subtle fresh botanical aroma",
-          defaultChecked: true,
-          estPrice: 99,
-        },
-        {
-          id: "transit",
-          label: "Anti-Damage Safe Transit Shell",
-          desc: "Protective shell for safe shipping",
-          defaultChecked: true,
-          estPrice: 0,
-        },
-        {
-          id: "scrunchie",
-          label: "Champagne Satin Silk Scrunchie",
-          desc: "Tucked elegantly among blooms",
-          defaultChecked: false,
-          estPrice: 149,
-        },
-      ];
-    }
-
-    return [
-      {
-        id: "jewelry",
-        label: "18K Demi-Fine Pendant & Studs",
-        desc: "Waterproof anti-tarnish jewelry pieces",
-        defaultChecked: true,
-        estPrice: 399,
-      },
-      {
-        id: "blooms",
-        label: "Everlasting Preserved Silk Blooms",
-        desc: "Handcrafted blooms that never wilt",
-        defaultChecked: true,
-        estPrice: 0,
-      },
-      {
-        id: "wrapping",
-        label: "Pastel Frosted Wrap & Satin Bow",
-        desc: "Layered aesthetic luxury packaging",
-        defaultChecked: true,
-        estPrice: 0,
-      },
-      {
-        id: "spritz",
-        label: "Scented Rose Bloom Mist Spritz",
-        desc: "Subtle fresh botanical aroma",
-        defaultChecked: true,
-        estPrice: 99,
-      },
-      {
-        id: "letter",
-        label: "Mini Keepsake Envelope Note",
-        desc: "Handwritten heartfelt message card",
-        defaultChecked: true,
-        estPrice: 0,
-      },
-      {
-        id: "chocolates_skewer",
-        label: "Ferrero Rocher Floral Inserts",
-        desc: "Chocolates nestled among petals",
-        defaultChecked: false,
-        estPrice: 199,
-      },
-    ];
-  }
-
-  // Grand Gifting Combo
-  return [
-    {
-      id: "watch_set",
-      label: "18K Gold Jubilee Watch + Jewelry Set",
-      desc: "Complete waterproof demi-fine collection",
-      defaultChecked: true,
-      estPrice: 799,
-    },
-    {
-      id: "mini_bouquet",
-      label: "Handcrafted Mini Preserved Bouquet",
-      desc: "Everlasting blooms paired with box",
-      defaultChecked: true,
-      estPrice: 399,
-    },
-    {
-      id: "chocolates",
-      label: "Ferrero Rocher Golden Collection",
-      desc: "Sweet celebratory golden indulgence",
-      defaultChecked: true,
-      estPrice: 199,
-    },
-    {
-      id: "lights",
-      label: "Warm Starlight Fairy Lights",
-      desc: "Magical warm glow across box & bouquet",
-      defaultChecked: true,
-      estPrice: 99,
-    },
-    {
-      id: "letter",
-      label: "Wax-Sealed Calligraphy Love Letter",
-      desc: "Personalized custom handwritten message",
-      defaultChecked: true,
-      estPrice: 0,
-    },
-    {
-      id: "candle",
-      label: "French Vanilla Soy Wax Candle",
-      desc: "Aromatic relaxation candle in glass jar",
-      defaultChecked: false,
-      estPrice: 249,
-    },
-  ];
-}
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
+import { splitHighlight } from "@/lib/site-types";
+import type { GiftingContent } from "@/lib/content/types";
 
 function WatchSVG() {
   return (
@@ -423,321 +85,217 @@ function TransitBoxSVG() {
   );
 }
 
-export default function GiftingStudio() {
-  // Stepper state: 1 = Creation, 2 = Occasion, 3 = Finalize & Checkout
-  const [activeStep, setActiveStep] = useState<number>(1);
+const SPOTLIGHT_ICONS = [WatchSVG, ChocolateSVG, SparkleAuraSVG, LoveLetterSVG, DiamondSVG, BotanicalRoseSVG, RibbonBowSVG, TransitBoxSVG];
 
-  // By default UNSELECTED state:
-  const [previewType, setPreviewType] = useState<string>("hamper");
-  const [selectedType, setSelectedType] = useState<string>(""); // unselected by default
-  const [selectedOccasion, setSelectedOccasion] = useState<string>(""); // unselected by default
+function addonsFor(gift: GiftingContent["gift_types"][number] | undefined, occasionKey: string) {
+  return (gift?.addons ?? [])
+    .map((a, i) => ({ ...a, id: `${i}` }))
+    .filter((a) => a.occasions.length === 0 || a.occasions.includes(occasionKey));
+}
+
+function Spotlight({ spot, index }: { spot: GiftingContent["spotlights"][number]; index: number }) {
+  const whatsapp = useWhatsApp();
+  const [before, highlight, after] = splitHighlight(spot.title, spot.highlight);
+  return (
+    <div className="flex flex-col justify-between rounded-3xl border border-[#DFC99B] bg-white p-6 shadow-xs transition-all duration-300 hover:border-[#8C671A] hover:shadow-xl sm:p-8">
+      <div>
+        {spot.image && (
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#FAF7F2] shadow-sm">
+            <Image
+              src={spot.image}
+              alt={spot.title}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover object-center transition-transform duration-700 hover:scale-104"
+            />
+          </div>
+        )}
+        <div className="mt-6">
+          {spot.eyebrow && (
+            <div className="inline-flex items-center gap-2">
+              <span className="h-px w-6 bg-[#8C671A]" aria-hidden="true" />
+              <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-[#8C671A]">{spot.eyebrow}</p>
+            </div>
+          )}
+          <h3 className="mt-2 font-serif text-2xl font-bold text-[#231C16] sm:text-3xl">
+            {before}
+            {highlight && <span className="italic text-[#8C671A]">{highlight}</span>}
+            {after}
+          </h3>
+          {spot.perfect_for.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <span className="font-sans text-xs font-medium text-[#231C16]/70 xl:font-semibold xl:text-[#231C16]/82">Perfect for:</span>
+              {spot.perfect_for.map((tag) => (
+                <span key={tag} className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {spot.description && (
+            <p className="mt-4 font-sans text-sm font-medium leading-relaxed text-[#231C16]/80 sm:text-base xl:font-semibold xl:text-[#231C16]/90">{spot.description}</p>
+          )}
+          {spot.items.length > 0 && (
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {spot.items.map((item, i) => {
+                const Icon = SPOTLIGHT_ICONS[(index * 4 + i) % SPOTLIGHT_ICONS.length];
+                return (
+                  <div key={i} className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
+                      <Icon />
+                    </div>
+                    <div>
+                      <p className="font-sans text-sm font-bold text-[#231C16]">{item.title}</p>
+                      <p className="font-sans text-xs font-medium text-[#231C16]/70 xl:font-semibold xl:text-[#231C16]/82">{item.text}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+      {spot.cta_label && (
+        <div className="mt-8 border-t border-[#F0EAE0] pt-5">
+          <a
+            href={whatsapp(spot.whatsapp_message)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#8C671A] px-6 py-4 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-[#735312] hover:shadow-md sm:text-sm"
+          >
+            <WhatsAppIcon className="h-4 w-4 text-[#F7DFC2]" />
+            <span>{spot.cta_label}</span>
+          </a>
+          {spot.footnote && <p className="mt-3 text-center font-sans text-xs text-[#231C16]/80">{spot.footnote}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function GiftingStudio() {
+  const g = useSite().content.gifting;
+  const whatsapp = useWhatsApp();
+
+  const GIFT_TYPES = g.gift_types.map((t, i) => ({
+    id: t.key || `type-${i}`,
+    label: t.label,
+    subtitle: t.subtitle,
+    badge: t.badge,
+    basePrice: t.base_price,
+    image: t.image || "/images/shiqueen-logo-2026b.png",
+    features: t.features,
+    source: t,
+  }));
+  const OCCASIONS = g.occasions.map((o, i) => ({
+    id: o.key || `occasion-${i}`,
+    label: o.label,
+    subtitle: o.subtitle,
+    themeNote: o.theme_note,
+    iconTag: o.tag,
+  }));
+
+  const firstType = GIFT_TYPES[0]?.id ?? "";
+  const firstOccasion = OCCASIONS[0]?.id ?? "";
+
+  // Stepper state: 1 = Creation, 2 = Occasion, 3 = Finalize
+  const [activeStep, setActiveStep] = useState<number>(1);
+  const [previewType, setPreviewType] = useState<string>(firstType);
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedOccasion, setSelectedOccasion] = useState<string>("");
 
   const effectiveType = selectedType || previewType;
-  const effectiveOccasion = selectedOccasion || "birthday";
+  const effectiveOccasion = selectedOccasion || firstOccasion;
+  const typeById = (id: string) => GIFT_TYPES.find((t) => t.id === id) ?? GIFT_TYPES[0];
+  const getAddons = (typeId: string, occasionId: string) => addonsFor(typeById(typeId)?.source, occasionId);
 
-  // Dynamic addons
   const availableAddons = getAddons(effectiveType, effectiveOccasion);
   const [selectedAddons, setSelectedAddons] = useState<string[]>(() =>
-    getAddons("hamper", "birthday")
-      .filter((a) => a.defaultChecked)
+    getAddons(firstType, firstOccasion)
+      .filter((a) => a.default_on)
       .map((a) => a.id)
   );
 
   const handleCommitType = (typeId: string) => {
     setSelectedType(typeId);
     setPreviewType(typeId);
-    const nextAddons = getAddons(typeId, effectiveOccasion);
-    setSelectedAddons(nextAddons.filter((a) => a.defaultChecked).map((a) => a.id));
+    setSelectedAddons(getAddons(typeId, effectiveOccasion).filter((a) => a.default_on).map((a) => a.id));
   };
 
   const handleCommitOccasion = (occasionId: string) => {
     setSelectedOccasion(occasionId);
-    const nextAddons = getAddons(effectiveType, occasionId);
-    setSelectedAddons(nextAddons.filter((a) => a.defaultChecked).map((a) => a.id));
+    setSelectedAddons(getAddons(effectiveType, occasionId).filter((a) => a.default_on).map((a) => a.id));
   };
 
   const toggleAddon = (id: string) => {
-    setSelectedAddons((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setSelectedAddons((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
-  const currentPreviewObj = GIFT_TYPES.find((t) => t.id === previewType) ?? GIFT_TYPES[0];
-  const currentTypeObj = GIFT_TYPES.find((t) => t.id === effectiveType) ?? GIFT_TYPES[0];
+  if (!g.show) return null;
+
+  const currentPreviewObj = typeById(previewType);
+  const currentTypeObj = typeById(effectiveType);
   const currentOccasionObj = OCCASIONS.find((o) => o.id === effectiveOccasion) ?? OCCASIONS[0];
 
   const selectedAddonObjs = availableAddons.filter((a) => selectedAddons.includes(a.id));
   const addonLabels = selectedAddonObjs.map((a) => a.label).join(", ");
 
-  // Price estimate math
-  const basePrice = currentTypeObj.basePrice;
-  const addonSum = selectedAddonObjs.reduce((acc, curr) => acc + curr.estPrice, 0);
+  const basePrice = currentTypeObj?.basePrice ?? 0;
+  const addonSum = selectedAddonObjs.reduce((acc, curr) => acc + curr.price, 0);
   const estMin = basePrice + addonSum;
-  const estMax = estMin + 300;
+  const estMax = estMin + (g.estimate_spread || 0);
 
-  const generatedWhatsAppText = `Hi Shiqueen! I am customizing a ${currentTypeObj.label} (${currentOccasionObj.label}).
+  const generatedWhatsAppText = `Hi! I am customizing a ${currentTypeObj?.label ?? "gift"} (${currentOccasionObj?.label ?? ""}).
 Selected Inclusions: ${addonLabels || "Standard Curation"}.
 Estimated Range: ₹${estMin.toLocaleString("en-IN")} - ₹${estMax.toLocaleString("en-IN")}.
 Please share customization photos, catalog and final pricing!`;
-
-  const customizerUrl = SOCIAL_LINKS.whatsappUrl(generatedWhatsAppText);
+  const customizerUrl = whatsapp(generatedWhatsAppText);
+  const [titleBefore, titleHighlight, titleAfter] = splitHighlight(g.title, g.highlight);
 
   return (
     <section
       id="gifting-studio"
-      aria-label="Shiqueen Bespoke Gifting Studio"
+      aria-label="Bespoke Gifting Studio"
       className="border-b border-[#E5DEC9] bg-[#FAF7F2] py-12 sm:py-16 lg:py-20"
     >
       <div className="mx-auto max-w-[1760px] px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
-        {/* Section Header */}
         <div className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2">
             <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
-            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8C671A]">
-              Bespoke Gifting Studio
-            </p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8C671A]">{g.eyebrow}</p>
             <span className="h-px w-8 bg-[#8C671A]" aria-hidden="true" />
           </div>
           <h2 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-[#231C16] sm:text-4xl lg:text-5xl">
-            Customized Hampers &amp;{" "}
-            <span className="italic text-[#8C671A]">Jewelry Bouquets</span>
+            {titleBefore}
+            {titleHighlight && <span className="italic text-[#8C671A]">{titleHighlight}</span>}
+            {titleAfter}
           </h2>
           <p className="mt-2.5 text-xs font-medium leading-relaxed text-[#231C16]/75 sm:text-sm lg:text-base xl:font-semibold xl:text-[#231C16]/85">
-            Unforgettable surprises tailor-made for Birthdays, Anniversaries, Bridesmaids &amp; Special Milestones. Handcrafted with love and delivered across India.
+            {g.description}
           </p>
         </div>
 
-        {/* 2 Signature Offerings: Side-by-Side Dual Luxury Showcase (Perfect Symmetry on Widescreen) */}
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-          {/* Spotlight 1: The Queen's Luxury Keepsake Hamper */}
-          <div className="flex flex-col justify-between rounded-3xl border border-[#DFC99B] bg-white p-6 sm:p-8 shadow-xs transition-all duration-300 hover:border-[#8C671A] hover:shadow-xl">
-            <div>
-              {/* Photo Stage (Clean, Symmetrical Framing) */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#FAF7F2] shadow-sm">
-                <Image
-                  src="/images/categories/cat-hampers.jpg"
-                  alt="Shiqueen Customized Luxury Gift Hamper with Gold Watch and Chocolates"
-                  fill
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  className="object-cover object-center transition-transform duration-700 hover:scale-104"
-                />
-              </div>
-
-              {/* Header Eyebrow & Title */}
-              <div className="mt-6">
-                <div className="inline-flex items-center gap-2">
-                  <span className="h-px w-6 bg-[#8C671A]" aria-hidden="true" />
-                  <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-[#8C671A]">
-                    Signature Gifting Box
-                  </p>
-                </div>
-
-                <h3 className="mt-2 font-serif text-2xl font-bold text-[#231C16] sm:text-3xl">
-                  The Queen&apos;s Luxury{" "}
-                  <span className="italic text-[#8C671A]">Keepsake Hamper</span>
-                </h3>
-
-                {/* Occasion Tags */}
-                <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  <span className="font-sans text-xs font-medium text-[#231C16]/70 xl:font-semibold xl:text-[#231C16]/82">Perfect for:</span>
-                  <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
-                    Birthdays
-                  </span>
-                  <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
-                    Anniversaries
-                  </span>
-                  <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
-                    Bridesmaids
-                  </span>
-                </div>
-
-                {/* High-Contrast Readable Description */}
-                <p className="mt-4 font-sans text-sm sm:text-base leading-relaxed text-[#231C16]/80 font-medium xl:font-semibold xl:text-[#231C16]/90">
-                  A grand rigid keepsake gift box lined with velvet and warm glow, curated with waterproof anti-tarnish jewelry, watches, chocolates, and handwritten notes.
-                </p>
-
-                {/* 4 Luxury Inclusion Cards with High Contrast (2x2 Grid) */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <WatchSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">18K Watch &amp; Jewelry</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Waterproof &amp; anti-tarnish</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <ChocolateSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">Ferrero Rocher Box</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Golden sweet indulgence</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <SparkleAuraSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">Fairy Lights &amp; Florals</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Magical warm unboxing glow</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <LoveLetterSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">Handwritten Letter</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Custom personalized note</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Button & Trust Microcopy */}
-            <div className="mt-8 border-t border-[#F0EAE0] pt-5">
-              <a
-                href={SOCIAL_LINKS.whatsappUrl(
-                  "Hi Shiqueen! I want to order/customize The Queen's Luxury Gift Hamper."
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full justify-center inline-flex items-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] px-6 py-4 font-sans text-xs sm:text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:shadow-md"
-              >
-                <WhatsAppIcon className="h-4 w-4 text-[#F7DFC2]" />
-                <span>Customize This Hamper on WhatsApp</span>
-              </a>
-              <p className="mt-3 text-center font-sans text-xs text-[#231C16]/80">
-                ✦ <strong>Video Preview on WhatsApp</strong> before dispatch • Pan-India Delivery
-              </p>
-            </div>
+        {g.spotlights.length > 0 && (
+          <div className={`mt-12 grid grid-cols-1 gap-8 lg:gap-10 ${g.spotlights.length > 1 ? "lg:grid-cols-2" : ""}`}>
+            {g.spotlights.map((spot, i) => (
+              <Spotlight key={i} spot={spot} index={i} />
+            ))}
           </div>
-
-          {/* Spotlight 2: Signature Everlasting Jewelry Bouquet */}
-          <div className="flex flex-col justify-between rounded-3xl border border-[#DFC99B] bg-white p-6 sm:p-8 shadow-xs transition-all duration-300 hover:border-[#8C671A] hover:shadow-xl">
-            <div>
-              {/* Photo Stage (Clean, Symmetrical Framing) */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#FAF7F2] shadow-sm">
-                <Image
-                  src="/images/categories/cat-bouquets.jpg"
-                  alt="Shiqueen Signature Handcrafted Jewelry Bouquet with Roses and Gold Necklace"
-                  fill
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  className="object-cover object-center transition-transform duration-700 hover:scale-104"
-                />
-              </div>
-
-              {/* Header Eyebrow & Title */}
-              <div className="mt-6">
-                <div className="inline-flex items-center gap-2">
-                  <span className="h-px w-6 bg-[#8C671A]" aria-hidden="true" />
-                  <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-[#8C671A]">
-                    Viral Gifting Innovation
-                  </p>
-                </div>
-
-                <h3 className="mt-2 font-serif text-2xl font-bold text-[#231C16] sm:text-3xl">
-                  Signature Everlasting{" "}
-                  <span className="italic text-[#8C671A]">Jewelry Bouquet</span>
-                </h3>
-
-                {/* Occasion Tags */}
-                <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  <span className="font-sans text-xs font-medium text-[#231C16]/70 xl:font-semibold xl:text-[#231C16]/82">Perfect for:</span>
-                  <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
-                    Birthdays
-                  </span>
-                  <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
-                    Romance &amp; Proposal
-                  </span>
-                  <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
-                    Anniversaries
-                  </span>
-                </div>
-
-                {/* High-Contrast Readable Description */}
-                <p className="mt-4 font-sans text-sm sm:text-base leading-relaxed text-[#231C16]/80 font-medium xl:font-semibold xl:text-[#231C16]/90">
-                  Everlasting preserved blooms that never wilt, lovingly nested with 18K gold-toned anti-tarnish jewelry, multi-layered frosted wrapping, and golden satin bow.
-                </p>
-
-                {/* 4 Luxury Inclusion Cards with High Contrast (2x2 Grid) */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <DiamondSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">18K Necklace &amp; Hoops</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Waterproof demi-fine pieces</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <BotanicalRoseSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">Everlasting Silk Blooms</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Preserved petals that never wilt</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <RibbonBowSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">Pastel Frosted Wrap</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Luxury satin bow &amp; tag</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#DFC99B] bg-[#FAF6EE] text-[#8C671A]">
-                      <TransitBoxSVG />
-                    </div>
-                    <div>
-                      <p className="font-sans text-sm font-bold text-[#231C16]">Anti-Damage Flower Box</p>
-                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Safe Pan-India delivery transit</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Button & Trust Microcopy */}
-            <div className="mt-8 border-t border-[#F0EAE0] pt-5">
-              <a
-                href={SOCIAL_LINKS.whatsappUrl(
-                  "Hi Shiqueen! I want to order/customize a Signature Jewelry Bouquet."
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full justify-center inline-flex items-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] px-6 py-4 font-sans text-xs sm:text-sm font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:shadow-md"
-              >
-                <WhatsAppIcon className="h-4 w-4 text-[#F7DFC2]" />
-                <span>Customize This Bouquet on WhatsApp</span>
-              </a>
-              <p className="mt-3 text-center font-sans text-xs text-[#231C16]/80">
-                ✦ <strong>Video Preview on WhatsApp</strong> before dispatch • Pan-India Delivery
-              </p>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* 3. The Guided Bespoke Studio: Widescreen-Optimized Compact Single-View Customizer */}
+        {g.customizer_show && GIFT_TYPES.length > 0 && OCCASIONS.length > 0 && (
         <div className="mt-14 sm:mt-16 lg:mt-20">
           {/* Section Header */}
           <div className="mx-auto max-w-3xl text-center">
             <span className="rounded-full bg-[#8C671A]/10 px-3.5 py-1 font-sans text-[11px] font-bold uppercase tracking-widest text-[#8C671A]">
-              Interactive Customizer
+              {g.customizer_eyebrow}
             </span>
             <h3 className="mt-2.5 font-serif text-2xl font-bold text-[#231C16] sm:text-3xl lg:text-4xl">
-              Build Your Custom Surprise
+              {g.customizer_title}
             </h3>
             <p className="mt-1 font-sans text-xs font-medium text-[#231C16]/75 sm:text-sm xl:text-[15px] xl:font-semibold xl:text-[#231C16]/85">
-              Select your preferred creation, occasion theme &amp; luxury add-ons below with live WhatsApp order preview.
+              {g.customizer_text}
             </p>
           </div>
 
@@ -782,7 +340,7 @@ Please share customization photos, catalog and final pricing!`;
                             isViewing ? "text-[#FAF6EE]" : "text-[#8C671A] font-semibold"
                           }`}
                         >
-                          {t.startingPrice}
+                          Starts ₹{t.basePrice.toLocaleString("en-IN")}
                         </p>
                       </div>
                       {isChosen && (
@@ -847,7 +405,7 @@ Please share customization photos, catalog and final pricing!`;
                           Starting From
                         </p>
                         <p className="font-sans text-2xl font-bold text-[#8C671A]">
-                          {currentPreviewObj.startingPrice}
+                          ₹{currentPreviewObj.basePrice.toLocaleString("en-IN")}
                         </p>
                       </div>
 
@@ -946,7 +504,7 @@ Please share customization photos, catalog and final pricing!`;
                     if (selectedOccasion !== "") {
                       setActiveStep(3);
                     } else {
-                      handleCommitOccasion("birthday");
+                      handleCommitOccasion(OCCASIONS[0].id);
                       setActiveStep(3);
                     }
                   }}
@@ -1023,11 +581,13 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
 
                     {/* Trust Highlights */}
-                    <div className="mt-3.5 space-y-1.5 border-t border-[#F0EAE0] pt-3 text-[11.5px] text-[#231C16]/80">
-                      <p>✦ <strong>Video Preview on WhatsApp</strong> before final dispatch</p>
-                      <p>✦ 100% Anti-Tarnish Demi-Fine Jewelry</p>
-                      <p>✦ 24-48 hr Express Pan-India Shipping</p>
-                    </div>
+                    {g.finale_perks.length > 0 && (
+                      <div className="mt-3.5 space-y-1.5 border-t border-[#F0EAE0] pt-3 text-[11.5px] text-[#231C16]/80">
+                        {g.finale_perks.map((perk) => (
+                          <p key={perk}>✦ {perk}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Price Box & WhatsApp Button */}
@@ -1043,7 +603,7 @@ Please share customization photos, catalog and final pricing!`;
                         </span>
                       </p>
                       <p className="mt-1 font-sans text-[10px] text-[#777777]">
-                        *Exact quote confirmed with Stylist on WhatsApp
+                        {g.estimate_note}
                       </p>
                     </div>
 
@@ -1054,7 +614,7 @@ Please share customization photos, catalog and final pricing!`;
                       className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] py-3.5 px-6 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg"
                     >
                       <WhatsAppIcon className="h-4 w-4 text-[#F7DFC2]" />
-                      <span>Order This Exact Box on WhatsApp</span>
+                      <span>{g.final_cta}</span>
                     </a>
                   </div>
                 </div>
@@ -1078,7 +638,8 @@ Please share customization photos, catalog and final pricing!`;
 
                     {/* 6 Add-ons Grid (2x3) with complete visibility and NO SCROLLBAR */}
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      {availableAddons.map((a) => {
+                      {availableAddons.map((addon) => {
+                        const a = { ...addon, estPrice: addon.price, desc: addon.text };
                         const isChecked = selectedAddons.includes(a.id);
                         return (
                           <div
@@ -1147,6 +708,7 @@ Please share customization photos, catalog and final pricing!`;
             </div>
           )}
         </div>
+        )}
       </div>
     </section>
   );

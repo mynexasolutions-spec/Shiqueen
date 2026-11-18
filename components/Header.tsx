@@ -3,14 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  ANNOUNCEMENTS,
-  BRAND,
-  CORE_SERVICES,
-  SOCIAL_LINKS,
-  type AnnouncementItem,
-} from "@/lib/brand-data";
 import { useCart } from "@/context/CartContext";
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
+
+type AnnouncementItem = { icon: string; text: string };
 
 export function InstagramIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -152,32 +148,16 @@ function AnnouncementIcon({ icon }: { icon: AnnouncementItem["icon"] }) {
   return <SparklesIcon className={iconClass} />;
 }
 
-const ANTI_TARNISH_SUBCATEGORIES = [
-  { name: "Necklaces", note: "Layered & Dainty Chains", href: "/collections/necklaces" },
-  { name: "Earrings", note: "Hoops, Studs & Drops", href: "/collections/earrings" },
-  { name: "Bracelets", note: "Cuffs, Tennis & Chains", href: "/collections/bracelets" },
-  { name: "Rings", note: "Stackable & Statement", href: "/collections/rings" },
-  { name: "Anti-Tarnish Watch", note: "18K Gold-Toned Timepieces", href: "/collections/watches" },
-];
-
-const DIRECT_NAV_LINKS: Array<{
-  label: string;
-  widescreenPrefix?: string;
-  href: string;
-}> = [
-  {
-    label: "Watches",
-    widescreenPrefix: "Anti-Tarnish ",
-    href: "/collections/watches",
-  },
-  { label: "Festive Sets", href: "/collections/festive" },
-  { label: "Custom Hampers", href: "/collections/hampers" },
-  { label: "Jewelry Bouquets", href: "/collections/bouquets" },
-];
-
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openDrawer, totalItems } = useCart();
+  const { content } = useSite();
+  const whatsapp = useWhatsApp();
+  const BRAND = content.brand;
+  const nav = content.navigation;
+  const ANNOUNCEMENTS = content.announcements.items;
+  const ANTI_TARNISH_SUBCATEGORIES = nav.dropdown_items;
+  const DIRECT_NAV_LINKS = nav.links;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -195,7 +175,7 @@ export default function Header() {
           {/* Duplicated for seamless 100% to -50% infinite loop */}
           {[...ANNOUNCEMENTS, ...ANNOUNCEMENTS].map((item, idx) => (
             <div
-              key={`${item.id}-${idx}`}
+              key={idx}
               className="flex items-center gap-2 whitespace-nowrap px-6"
             >
               <AnnouncementIcon icon={item.icon} />
@@ -227,12 +207,13 @@ export default function Header() {
               className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#DFC99B] bg-[#FAF6EE] p-0.5 shadow-xs transition-transform duration-300 group-hover:scale-[1.03] sm:h-18 sm:w-18"
             >
               <Image
-                src={BRAND.logoPath}
+                src={BRAND.logo}
                 alt="Shiqueen Crown Logo"
                 fill
                 sizes="72px"
                 className="rounded-[10px] object-cover"
-                priority
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
             <div className="flex flex-col leading-none">
@@ -256,7 +237,7 @@ export default function Header() {
                 href="#categories"
                 className="inline-flex items-center gap-1 whitespace-nowrap text-[13.5px] font-medium tracking-wide text-[#171717] transition-colors hover:text-[#8C671A] xl:text-[14px] 2xl:text-[15px] 2xl:font-semibold 2xl:text-[#111111]"
               >
-                <span>Anti-Tarnish Jewelry</span>
+                <span>{nav.dropdown_label}</span>
                 <svg
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -273,17 +254,17 @@ export default function Header() {
               <div className="pointer-events-none invisible absolute left-0 top-full z-50 w-72 pt-2 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:visible group-focus-within:opacity-100">
                 <div className="rounded-2xl border border-[#E5DEC9] bg-white p-3 shadow-xl">
                   <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8C671A]">
-                    Waterproof Everyday Demi-Fine
+                    {nav.dropdown_heading}
                   </p>
                   <ul className="space-y-1">
                     {ANTI_TARNISH_SUBCATEGORIES.map((sub) => (
-                      <li key={sub.name}>
+                      <li key={`${sub.label}-${sub.href}`}>
                         <Link
                           href={sub.href}
                           className="flex items-center justify-between rounded-xl px-3 py-2 text-sm transition hover:bg-[#FAF6EE]"
                         >
                           <span className="font-medium text-[#171717]">
-                            {sub.name}
+                            {sub.label}
                           </span>
                           <span className="text-[11px] text-[#171717]/60">
                             {sub.note}
@@ -298,7 +279,7 @@ export default function Header() {
 
             {DIRECT_NAV_LINKS.map((item) => (
               <Link
-                key={item.label}
+                key={`${item.label}-${item.href}`}
                 href={item.href}
                 className="relative whitespace-nowrap py-2 text-[13.5px] font-medium tracking-wide text-[#171717] transition-colors hover:text-[#8C671A] xl:text-[14px] 2xl:text-[15px] 2xl:font-semibold 2xl:text-[#111111] after:absolute after:bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-[#C59B27] after:transition-all after:duration-200 hover:after:w-full"
               >
@@ -309,6 +290,26 @@ export default function Header() {
 
           {/* Right Actions: Desktop Cart Drawer Trigger (lg+) + Mobile Menu Trigger (<lg) */}
           <div className="flex items-center gap-2.5">
+            <Link
+              href="/account"
+              aria-label="My account"
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-[#E5DEC9] bg-white px-3 text-xs font-semibold text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:px-4 xl:text-[13px]"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 text-[#8C671A]"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0 1 16 0" />
+              </svg>
+              <span className="hidden lg:inline">Account</span>
+            </Link>
             <button
               type="button"
               onClick={openDrawer}
@@ -376,7 +377,7 @@ export default function Header() {
               <div className="flex items-center gap-3">
                 <div className="relative h-11 w-11 overflow-hidden rounded-xl border border-[#DFC99B] bg-[#FAF6EE]">
                   <Image
-                    src={BRAND.logoPath}
+                    src={BRAND.logo}
                     alt="Shiqueen Logo"
                     fill
                     sizes="44px"
@@ -446,7 +447,7 @@ export default function Header() {
                     <p className="mt-0.5 text-[11px] font-medium text-[#171717]/70">
                       {totalItems > 0
                         ? `${totalItems} item${totalItems > 1 ? "s" : ""} ready for checkout`
-                        : "Free Pan-India Express Shipping"}
+                        : content.cart.drawer_promo}
                     </p>
                   </div>
                 </div>
@@ -460,17 +461,17 @@ export default function Header() {
 
               <div>
                 <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8C671A]">
-                  Anti-Tarnish Jewelry
+                  {nav.dropdown_label}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {ANTI_TARNISH_SUBCATEGORIES.map((sub) => (
                     <Link
-                      key={sub.name}
+                      key={`${sub.label}-${sub.href}`}
                       href={sub.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className="rounded-xl border border-[#E5DEC9] bg-white px-3 py-2.5 text-xs font-medium text-[#171717] transition hover:border-[#C59B27]"
                     >
-                      {sub.name}
+                      {sub.label}
                     </Link>
                   ))}
                 </div>
@@ -478,21 +479,17 @@ export default function Header() {
 
               <div>
                 <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8C671A]">
-                  Signature Collections &amp; Gifting
+                  {nav.mobile_links_heading}
                 </p>
                 <div className="space-y-2">
                   {DIRECT_NAV_LINKS.map((item) => (
                     <Link
-                      key={item.label}
+                      key={`${item.label}-${item.href}`}
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center justify-between rounded-xl border border-[#E5DEC9] bg-white px-4 py-3 text-sm font-medium text-[#171717]"
                     >
-                      <span>
-                        {item.widescreenPrefix
-                          ? `${item.widescreenPrefix}${item.label}`
-                          : item.label}
-                      </span>
+                      <span>{item.label}</span>
                     </Link>
                   ))}
                 </div>
@@ -501,11 +498,11 @@ export default function Header() {
               {/* 3 Core Services */}
               <div className="rounded-2xl border border-[#E5DEC9] bg-[#F3ECE0] p-4">
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8C671A]">
-                  Our Services
+                  {nav.services_heading}
                 </p>
                 <ul className="space-y-2.5">
-                  {CORE_SERVICES.map((service) => (
-                    <li key={service.id} className="text-xs">
+                  {nav.services.map((service, i) => (
+                    <li key={i} className="text-xs">
                       <p className="font-semibold text-[#171717]">
                         <span className="text-[#8C671A]" aria-hidden="true">
                           ✦{" "}
@@ -524,29 +521,27 @@ export default function Header() {
             {/* Drawer Footer Social & WhatsApp */}
             <div className="space-y-3 border-t border-[#E5DEC9] bg-white px-5 py-4">
               <a
-                href={SOCIAL_LINKS.whatsappUrl(
-                  "Hi Shiqueen! I would like to order or customize a gift hamper/jewelry."
-                )}
+                href={whatsapp(nav.whatsapp_message)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex w-full items-center justify-center gap-2 rounded-full bg-[#171717] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-[#8C671A]"
               >
                 <WhatsAppIcon className="h-4 w-4" />
-                Order &amp; Customize on WhatsApp
+                {nav.whatsapp_cta}
               </a>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <a
-                  href={SOCIAL_LINKS.instagram}
+                  href={BRAND.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 rounded-full border border-[#E5DEC9] bg-[#FAF6EE] py-2.5 text-xs font-medium text-[#171717]"
                 >
                   <InstagramIcon className="h-4 w-4 text-[#8C671A]" />
-                  {SOCIAL_LINKS.instagramHandle}
+                  {BRAND.instagram_handle}
                 </a>
                 <a
-                  href={SOCIAL_LINKS.facebook}
+                  href={BRAND.facebook_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 rounded-full border border-[#E5DEC9] bg-[#FAF6EE] py-2.5 text-xs font-medium text-[#171717]"

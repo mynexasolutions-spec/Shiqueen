@@ -29,6 +29,14 @@ export default function CollectionHeader({
             Collections
           </Link>
           <span>/</span>
+          {collection.ancestors?.map((a) => (
+            <span key={a.slug} className="flex items-center gap-2">
+              <Link href={`/collections/${a.slug}`} className="transition hover:text-[#8C671A]">
+                {a.name}
+              </Link>
+              <span>/</span>
+            </span>
+          ))}
           <span className="font-semibold text-[#171717] xl:font-bold">{collection.name}</span>
         </nav>
 

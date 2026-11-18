@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
+import { SiteProvider } from "@/components/site/SiteProvider";
+import { getPublicSite } from "@/lib/server/content";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shiqueen.in"),
   title: "SHIQUEEN — Crafted For Every Queen | Anti-Tarnish Jewelry & Custom Hampers",
   description:
     "Shop 100% Anti-Tarnish & Waterproof Jewelry (Necklaces, Earrings, Bracelets, Rings, Anti-Tarnish Watches), Festive & Ethnic Sets, Customized Gift Hampers & Jewelry Bouquets with Pan-India Shipping & WhatsApp Order Support.",
-  icons: {
-    icon: "/images/shiqueen-logo.jpg",
-    apple: "/images/shiqueen-logo.jpg",
-  },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Cached storefront content (brand, menus, settings, offers) for every page.
+  const site = await getPublicSite();
   return (
-    <html lang="en" className="h-full scroll-smooth antialiased">
+    <html lang="en" data-scroll-behavior="smooth" className="h-full scroll-smooth antialiased">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -30,10 +30,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#FAF7F2] text-[#171717] font-sans selection:bg-[#F7DFC2] selection:text-[#171717]">
-        <CartProvider>
-          {children}
-          <CartDrawer />
-        </CartProvider>
+        <SiteProvider site={site}>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+        </SiteProvider>
       </body>
     </html>
   );

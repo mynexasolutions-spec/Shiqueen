@@ -5,29 +5,27 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TrustMarquee from "@/components/TrustMarquee";
 import ProductDetailView from "@/components/product/ProductDetailView";
-import {
-  MVP_PRODUCTS,
-  getProductBySlug,
-  getCollectionBySlug,
-  getProductSpecifications,
-  getProductReviews,
-  getRelatedProducts,
-} from "@/lib/collections-data";
-import { BRAND } from "@/lib/brand-data";
+import { getProductReviews, getStoreReviews } from "@/lib/server/reviews";
+import { getAllProductSlugs, getProductPageData } from "@/lib/server/catalog";
+import { getPublicSite } from "@/lib/server/content";
+
+// Catalogue pages are fully static (cached DB reads). New slugs created in the
+// admin render completely on their first visit instead of showing a skeleton.
+export const ensureStatic = "navigation";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return MVP_PRODUCTS.map((product) => ({
-    slug: product.slug,
-  }));
+  const slugs = await getAllProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const BRAND = (await getPublicSite()).content.brand;
+  const product = (await getProductPageData(slug))?.product;
 
   if (!product) {
     return {
@@ -52,23 +50,24 @@ async function ProductContent({
   paramsPromise: Promise<{ slug: string }>;
 }) {
   const { slug } = await paramsPromise;
-  const product = getProductBySlug(slug);
+  const data = await getProductPageData(slug);
 
-  if (!product) {
+  if (!data) {
     notFound();
   }
 
-  const collection = getCollectionBySlug(product.collectionSlug);
-  const specifications = getProductSpecifications(product);
-  const reviews = getProductReviews(product);
-  const relatedProducts = getRelatedProducts(product, 4);
+  const { product, collection, specifications, relatedProducts } = data;
+  const [reviews, store] = await Promise.all([getProductReviews(product.id), getStoreReviews()]);
 
   return (
     <ProductDetailView
+      key={product.slug}
       product={product}
       collection={collection}
       specifications={specifications}
-      initialReviews={reviews}
+      reviews={reviews}
+      storeReviews={store.reviews}
+      storeReviewTotal={store.total}
       relatedProducts={relatedProducts}
     />
   );

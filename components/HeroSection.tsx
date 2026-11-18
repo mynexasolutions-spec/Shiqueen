@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { HERO_SLIDES, type HeroSlide } from "@/lib/brand-data";
+import { useSite } from "@/components/site/SiteProvider";
 
 function renderTitleWithHighlight(
   title: string,
@@ -33,16 +33,32 @@ function renderTitleWithHighlight(
 }
 
 export default function HeroSection() {
+  const { hero } = useSite().content;
+  const HERO_SLIDES = hero.slides.map((s, i) => ({
+    id: `slide-${i}`,
+    desktopImage: s.desktop_image || s.mobile_image,
+    mobileImage: s.mobile_image || s.desktop_image,
+    imageAlt: s.image_alt,
+    bgColor: s.bg_color || "#DDB091",
+    eyebrow: s.eyebrow,
+    title: s.title,
+    highlightWord: s.highlight,
+    description: s.description,
+    primaryCta: { label: s.cta_label, href: s.cta_href || "#categories" },
+  }));
+  const count = HERO_SLIDES.length;
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
+    if (count < 2) return;
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
+      setActiveIndex((prev) => (prev + 1) % count);
+    }, Math.max(2, hero.autoplay_seconds || 5) * 1000);
     return () => clearInterval(timer);
-  }, [activeIndex]);
+  }, [activeIndex, count, hero.autoplay_seconds]);
 
-  const activeSlide: HeroSlide = HERO_SLIDES[activeIndex];
+  if (count === 0) return null;
+  const activeSlide = HERO_SLIDES[Math.min(activeIndex, count - 1)];
 
   return (
     <section
@@ -72,7 +88,8 @@ export default function HeroSection() {
                   src={slide.desktopImage}
                   alt={slide.imageAlt}
                   fill
-                  priority={idx === 0}
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  fetchPriority={idx === 0 ? "high" : "auto"}
                   sizes="(min-width: 768px) 85vw, 100vw"
                   className="object-contain object-right"
                 />
@@ -112,12 +129,12 @@ export default function HeroSection() {
 
             {/* Primary CTA */}
             <div className="mt-6 flex flex-wrap items-center gap-4">
-              <a
+              {activeSlide.primaryCta.label && <a
                 href={activeSlide.primaryCta.href}
                 className="inline-flex items-center justify-center rounded-full bg-[#111111] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#8C671A] xl:px-7 xl:py-3.5 xl:text-xs"
               >
                 <span>{activeSlide.primaryCta.label}</span>
-              </a>
+              </a>}
             </div>
           </div>
         </div>
@@ -161,8 +178,9 @@ export default function HeroSection() {
                 src={slide.mobileImage}
                 alt={slide.imageAlt}
                 fill
-                priority={idx === 0}
-                sizes="100vw"
+                loading={idx === 0 ? "eager" : "lazy"}
+                  fetchPriority={idx === 0 ? "high" : "auto"}
+                sizes="(max-width: 767px) 100vw, 1px"
                 className="object-cover object-center"
               />
             </div>

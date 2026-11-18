@@ -2,11 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Header, { WhatsAppIcon } from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useCart, GIFT_WRAP_PRICE } from "@/context/CartContext";
-import { SOCIAL_LINKS } from "@/lib/brand-data";
+import { useCart } from "@/context/CartContext";
+import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
+import {
+  getCheckoutContext,
+  placeOrder,
+  quoteCheckout,
+  type CheckoutContext,
+  type PublicQuote,
+} from "./actions";
 
 export default function CheckoutPage() {
   const {
@@ -17,7 +24,10 @@ export default function CheckoutPage() {
     giftWrapTotal,
     grandTotal,
     clearCart,
+    giftWrapPrice: GIFT_WRAP_PRICE,
   } = useCart();
+  const { settings: pay } = useSite();
+  const whatsapp = useWhatsApp();
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -26,42 +36,132 @@ export default function CheckoutPage() {
   const [city, setCity] = useState("");
   const [stateName, setStateName] = useState("");
   const [pincode, setPincode] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"prepaid" | "cod">("prepaid");
+  const [paymentMethod, setPaymentMethod] = useState<"prepaid" | "cod">(pay.online_enabled || !pay.cod_enabled ? "prepaid" : "cod");
+  const [instructions, setInstructions] = useState("");
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [orderPlacedId, setOrderPlacedId] = useState<string | null>(null);
+  const [ctx, setCtx] = useState<CheckoutContext | null>(null);
+  const [quote, setQuote] = useState<PublicQuote | null>(null);
+  const [placing, setPlacing] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [orderIssues, setOrderIssues] = useState<string[]>([]);
 
-  const prepaidDiscount =
-    paymentMethod === "prepaid" ? Math.round(subtotal * 0.1) : 0;
-  const couponDiscount =
-    appliedCoupon === "NEW50"
-      ? 50
-      : appliedCoupon === "B1G1QUEEN" && totalItems >= 2
-      ? Math.round(subtotal * 0.25)
-      : appliedCoupon === "ROYAL50" && totalItems >= 3
-      ? Math.round(subtotal * 0.35)
-      : 0;
+  // Prefill from the signed-in customer's profile / saved address.
+  useEffect(() => {
+    let alive = true;
+    getCheckoutContext()
+      .then((c) => {
+        if (!alive) return;
+        setCtx(c);
+        const u = c.user;
+        const a = c.address;
+        if (u) {
+          setFullName((v) => v || a?.full_name || u.name);
+          setEmail((v) => v || u.email);
+          setPhone((v) => v || a?.phone || u.phone);
+        }
+        if (a) {
+          setAddress((v) => v || [a.line1, a.line2].filter(Boolean).join(", "));
+          setCity((v) => v || a.city);
+          setStateName((v) => v || a.state);
+          setPincode((v) => v || a.pincode);
+        }
+        if (!c.settings.codEnabled) setPaymentMethod("prepaid");
+        else if (!c.settings.onlineEnabled) setPaymentMethod("cod");
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const finalPayable = Math.max(
-    0,
-    grandTotal - prepaidDiscount - couponDiscount
+  const cartPayload = useMemo(
+    () =>
+      items.map((i) => ({
+        slug: i.slug,
+        quantity: i.quantity,
+        finish: i.plating,
+        giftWrap: Boolean(i.giftWrap),
+        giftMessage: i.giftMessage ?? "",
+      })),
+    [items]
   );
+
+  // Server-side price check (live prices, stock, coupon rules).
+  useEffect(() => {
+    if (!cartPayload.length) return;
+    let alive = true;
+    const t = setTimeout(() => {
+      quoteCheckout(cartPayload, appliedCoupon ?? "", paymentMethod)
+        .then((q) => {
+          if (alive) setQuote(q);
+        })
+        .catch(() => {});
+    }, 250);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [cartPayload, appliedCoupon, paymentMethod]);
+
+  const prepaidPercent = ctx?.settings.prepaidDiscountPercent ?? pay.prepaid_discount_percent;
+  const onlineFee = ctx?.settings.onlineFee ?? pay.online_fee;
+  const codFee = ctx?.settings.codFee ?? pay.cod_fee;
+  const codMax = ctx?.settings.codMaxOrder ?? pay.cod_max_order;
+  const codEnabled = (ctx?.settings.codEnabled ?? pay.cod_enabled) && !(codMax > 0 && (quote?.subtotal ?? subtotal) > codMax);
+  const onlineEnabled = ctx?.settings.onlineEnabled ?? pay.online_enabled;
+  const paymentFee = paymentMethod === "cod" ? codFee : onlineFee;
+  // The prepaid discount is recomputed instantly (same formula as the server) so
+  // switching payment mode never shows a stale total while the re-quote is in flight.
+  const prepaidDiscount =
+    paymentMethod === "prepaid" ? Math.round(((quote?.subtotal ?? subtotal) * prepaidPercent) / 100) : 0;
+  const couponDiscount = quote?.couponDiscount ?? 0;
+  const shippingFee = quote?.shippingFee ?? 0;
+  const finalPayable = quote
+    ? Math.max(0, quote.subtotal + quote.giftWrapTotal + quote.shippingFee + paymentFee - prepaidDiscount - quote.couponDiscount)
+    : Math.max(0, grandTotal + paymentFee - prepaidDiscount - couponDiscount);
+  const couponApplied = Boolean(quote?.couponCode);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     const code = couponInput.trim().toUpperCase();
-    if (["NEW50", "B1G1QUEEN", "ROYAL50"].includes(code)) {
-      setAppliedCoupon(code);
-    } else {
-      setAppliedCoupon("NEW50");
-    }
+    setAppliedCoupon(code || null);
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const generatedId = `SQ-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderPlacedId(generatedId);
-    clearCart();
+    if (placing) return;
+    setPlacing(true);
+    setOrderError(null);
+    setOrderIssues([]);
+    try {
+      const res = await placeOrder({
+        items: cartPayload,
+        couponCode: couponApplied ? appliedCoupon ?? "" : "",
+        paymentMethod,
+        fullName,
+        phone,
+        email,
+        address,
+        city,
+        state: stateName,
+        pincode,
+      });
+      if (res.ok) {
+        setOrderPlacedId(res.orderNumber);
+        setInstructions(res.instructions);
+        clearCart();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        setOrderError(res.error);
+        setOrderIssues(res.issues ?? []);
+      }
+    } catch {
+      setOrderError("We couldn't reach the server. Please check your connection and try again.");
+    } finally {
+      setPlacing(false);
+    }
   };
 
   return (
@@ -78,11 +178,17 @@ export default function CheckoutPage() {
               Order Confirmed • {orderPlacedId}
             </p>
             <h1 className="mt-1 font-serif text-3xl font-bold text-[#111111]">
-              Thank You, Queen!
+              Thank you!
             </h1>
             <p className="mt-2 text-xs leading-relaxed text-[#171717]/75 sm:text-sm">
-              Your order <strong>{orderPlacedId}</strong> has been received. Our Gifting &amp; Dispatch Studio will share live tracking details on your WhatsApp shortly.
+              Your order <strong>{orderPlacedId}</strong> has been received. We&apos;ll share dispatch and tracking updates with you shortly.
             </p>
+            {instructions && (
+              <div className="mx-auto mt-4 max-w-md whitespace-pre-line rounded-2xl border border-[#E5DEC9] bg-[#FBF7EE] p-4 text-left text-sm text-[#171717]">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#8C671A]">How to pay</p>
+                {instructions}
+              </div>
+            )}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Link
@@ -92,7 +198,7 @@ export default function CheckoutPage() {
                 Continue Shopping
               </Link>
               <a
-                href={SOCIAL_LINKS.whatsappUrl(
+                href={whatsapp(
                   `Hi Shiqueen! My Order ID is ${orderPlacedId}. Please share dispatch & tracking updates.`
                 )}
                 target="_blank"
@@ -240,11 +346,10 @@ export default function CheckoutPage() {
                   Select Payment Mode
                 </p>
                 <div className="mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {onlineEnabled && (
                   <label
                     className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
-                      paymentMethod === "prepaid"
-                        ? "border-[#111111] bg-[#FAF7F2]"
-                        : "border-[#E5DEC9] bg-white"
+                      paymentMethod === "prepaid" ? "border-[#111111] bg-[#FAF7F2]" : "border-[#E5DEC9] bg-white"
                     }`}
                   >
                     <input
@@ -255,20 +360,25 @@ export default function CheckoutPage() {
                       className="mt-0.5 accent-[#111111]"
                     />
                     <div>
-                      <p className="text-xs font-bold text-[#111111]">
-                        UPI / Cards / NetBanking (Extra 10% OFF)
+                      <p className="text-sm font-bold text-[#111111]">
+                        {pay.online_label}
+                        {prepaidPercent > 0 ? ` (Extra ${prepaidPercent}% OFF)` : ""}
                       </p>
-                      <p className="mt-0.5 text-[11px] text-[#137333]">
-                        Save ₹{Math.round(subtotal * 0.1).toLocaleString("en-IN")} instantly on prepaid
-                      </p>
+                      <p className="mt-0.5 text-xs text-[#171717]/70">{pay.online_description}</p>
+                      {prepaidPercent > 0 && (
+                        <p className="mt-0.5 text-xs font-semibold text-[#137333]">
+                          Save ₹{Math.round(((quote?.subtotal ?? subtotal) * prepaidPercent) / 100).toLocaleString("en-IN")}
+                        </p>
+                      )}
+                      {onlineFee > 0 && <p className="mt-0.5 text-xs font-semibold text-[#8A4B00]">+ ₹{onlineFee.toLocaleString("en-IN")} payment charge</p>}
                     </div>
                   </label>
+                  )}
 
+                  {codEnabled && (
                   <label
                     className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
-                      paymentMethod === "cod"
-                        ? "border-[#111111] bg-[#FAF7F2]"
-                        : "border-[#E5DEC9] bg-white"
+                      paymentMethod === "cod" ? "border-[#111111] bg-[#FAF7F2]" : "border-[#E5DEC9] bg-white"
                     }`}
                   >
                     <input
@@ -279,22 +389,47 @@ export default function CheckoutPage() {
                       className="mt-0.5 accent-[#111111]"
                     />
                     <div>
-                      <p className="text-xs font-bold text-[#111111]">
-                        Cash on Delivery (COD)
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-[#171717]/65">
-                        Pay via Cash or UPI at your doorstep
-                      </p>
+                      <p className="text-sm font-bold text-[#111111]">{pay.cod_label}</p>
+                      <p className="mt-0.5 text-xs text-[#171717]/70">{pay.cod_description}</p>
+                      {codFee > 0 && <p className="mt-0.5 text-xs font-semibold text-[#8A4B00]">+ ₹{codFee.toLocaleString("en-IN")} COD charge</p>}
                     </div>
                   </label>
+                  )}
                 </div>
+                {!codEnabled && (ctx?.settings.codEnabled ?? pay.cod_enabled) && codMax > 0 && (
+                  <p className="mt-2 text-xs text-[#171717]/70">Cash on Delivery is available for orders up to ₹{codMax.toLocaleString("en-IN")}.</p>
+                )}
               </div>
+
+              {orderError && (
+                <div role="alert" className="rounded-2xl border border-[#F4C7C3] bg-[#FEF3F2] p-4 text-sm text-[#912018]">
+                  <p className="font-semibold">{orderError}</p>
+                  {orderIssues.length > 0 && (
+                    <ul className="mt-1 list-disc pl-5">
+                      {orderIssues.map((i) => (
+                        <li key={i}>{i}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              {ctx && !ctx.user && (
+                <p className="text-sm text-[#171717]/75">
+                  Have an account?{" "}
+                  <Link href="/login?next=/checkout" className="font-semibold text-[#8C671A] underline">
+                    Sign in
+                  </Link>{" "}
+                  to track this order from your dashboard.
+                </p>
+              )}
 
               <button
                 type="submit"
-                className="w-full rounded-full bg-[#111111] py-4 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-lg transition hover:bg-[#8C671A]"
+                disabled={placing}
+                className="w-full rounded-full bg-[#111111] py-4 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-lg transition hover:bg-[#8C671A] disabled:cursor-wait disabled:opacity-70"
               >
-                Complete Royal Order • ₹{finalPayable.toLocaleString("en-IN")}
+                {placing ? "Placing your order…" : `Complete Royal Order • ₹${finalPayable.toLocaleString("en-IN")}`}
               </button>
             </form>
 
@@ -345,7 +480,7 @@ export default function CheckoutPage() {
                   type="text"
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value)}
-                  placeholder="Promo code (NEW50 / B1G1QUEEN)"
+                  placeholder="Promo code"
                   className="flex-1 rounded-full border border-[#E5DEC9] bg-[#FAF7F2] px-4 py-2 text-xs font-semibold uppercase placeholder:normal-case focus:border-[#8C671A] focus:outline-hidden"
                 />
                 <button
@@ -355,10 +490,19 @@ export default function CheckoutPage() {
                   Apply
                 </button>
               </form>
-              {appliedCoupon && (
-                <p className="mt-1.5 text-xs font-semibold text-[#137333]">
-                  ✓ Code {appliedCoupon} applied (−₹{couponDiscount})
+              {appliedCoupon && quote && (
+                <p className={`mt-1.5 text-xs font-semibold ${couponApplied ? "text-[#137333]" : "text-[#B42318]"}`}>
+                  {couponApplied
+                    ? `✓ Code ${quote.couponCode} applied (−₹${couponDiscount.toLocaleString("en-IN")})`
+                    : quote.couponMessage}
                 </p>
+              )}
+              {quote && quote.issues.length > 0 && (
+                <ul className="mt-3 list-disc rounded-xl bg-[#FEF3F2] p-3 pl-7 text-xs text-[#912018]">
+                  {quote.issues.map((i) => (
+                    <li key={i}>{i}</li>
+                  ))}
+                </ul>
               )}
 
               <div className="mt-5 space-y-2 border-t border-[#E5DEC9] pt-4 text-xs">
@@ -384,7 +528,7 @@ export default function CheckoutPage() {
                 )}
                 {prepaidDiscount > 0 && (
                   <div className="flex justify-between text-[#137333]">
-                    <span>Extra 10% Prepaid Discount</span>
+                    <span>Extra {prepaidPercent}% Prepaid Discount</span>
                     <span className="font-semibold">
                       −₹{prepaidDiscount.toLocaleString("en-IN")}
                     </span>
@@ -392,15 +536,25 @@ export default function CheckoutPage() {
                 )}
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-[#137333]">
-                    <span>Coupon Discount ({appliedCoupon})</span>
+                    <span>Coupon Discount ({quote?.couponCode})</span>
                     <span className="font-semibold">
                       −₹{couponDiscount.toLocaleString("en-IN")}
                     </span>
                   </div>
                 )}
+                {paymentFee > 0 && (
+                  <div className="flex justify-between text-[#171717]/75">
+                    <span>{paymentMethod === "cod" ? "COD charges" : "Payment charges"}</span>
+                    <span className="font-semibold text-[#111111]">₹{paymentFee.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#171717]/75">
                   <span>Express Pan-India Shipping</span>
-                  <span className="font-semibold text-[#137333]">FREE</span>
+                  {shippingFee > 0 ? (
+                    <span className="font-semibold text-[#111111]">₹{shippingFee.toLocaleString("en-IN")}</span>
+                  ) : (
+                    <span className="font-semibold text-[#137333]">FREE</span>
+                  )}
                 </div>
                 <div className="flex items-baseline justify-between border-t border-[#E5DEC9] pt-3 text-sm font-bold text-[#111111]">
                   <span>Total Payable</span>
