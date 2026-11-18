@@ -75,7 +75,7 @@ function CollectionSkeleton() {
       {/* Grid Skeleton */}
       <div className="mx-auto max-w-[1760px] px-4 py-8 sm:px-6 sm:py-10 lg:px-12 xl:px-16 2xl:px-20">
         <div className="mb-6 h-12 rounded-2xl bg-white/70" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-5 xl:gap-6 2xl:gap-7">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}

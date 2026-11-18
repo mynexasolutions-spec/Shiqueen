@@ -10,6 +10,7 @@ import {
   SOCIAL_LINKS,
   type AnnouncementItem,
 } from "@/lib/brand-data";
+import { useCart } from "@/context/CartContext";
 
 export function InstagramIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -176,6 +177,7 @@ const DIRECT_NAV_LINKS: Array<{
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { openDrawer, totalItems } = useCart();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -310,26 +312,54 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Mobile Menu Trigger (Right side on mobile) */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#E5DEC9] bg-white text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:hidden"
-            aria-label="Open navigation menu"
-            aria-expanded={mobileMenuOpen}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              className="h-5 w-5"
+          {/* Right Actions: Desktop Cart Drawer Trigger (lg+) + Mobile Menu Trigger (<lg) */}
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={openDrawer}
+              aria-label={`Open shopping bag (${totalItems} items)`}
+              className="relative hidden h-10 items-center gap-2 rounded-full border border-[#E5DEC9] bg-white px-4 text-xs font-semibold text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:inline-flex xl:text-[13px]"
             >
-              <line x1="4" x2="20" y1="7" y2="7" />
-              <line x1="4" x2="20" y1="12" y2="12" />
-              <line x1="4" x2="15" y1="17" y2="17" />
-            </svg>
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 text-[#8C671A]"
+                aria-hidden="true"
+              >
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              <span>Bag</span>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#171717] px-1.5 text-[10px] font-bold text-[#FAF6EE]">
+                {totalItems}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#E5DEC9] bg-white text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:hidden"
+              aria-label="Open navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
+                <line x1="4" x2="20" y1="7" y2="7" />
+                <line x1="4" x2="20" y1="12" y2="12" />
+                <line x1="4" x2="15" y1="17" y2="17" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -386,8 +416,53 @@ export default function Header() {
               </button>
             </div>
 
-            {/* Categories & Subcategories */}
-            <div className="flex-1 space-y-6 px-5 py-6">
+            {/* Categories, Bag Card & Subcategories */}
+            <div className="flex-1 space-y-6 px-5 py-5">
+              {/* Top Royal Bag Quick Card Inside Side Menu */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openDrawer();
+                }}
+                className="flex w-full items-center justify-between rounded-2xl border border-[#DFC99B] bg-white p-3.5 text-left shadow-xs transition hover:border-[#8C671A]"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FAF6EE] text-[#8C671A] border border-[#E5DEC9]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#171717]">
+                      Your Royal Bag
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-medium text-[#171717]/70">
+                      {totalItems > 0
+                        ? `${totalItems} item${totalItems > 1 ? "s" : ""} ready for checkout`
+                        : "Free Pan-India Express Shipping"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#171717] px-2 text-[11px] font-bold text-[#FAF6EE]">
+                    {totalItems}
+                  </span>
+                </div>
+              </button>
+
               <div>
                 <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8C671A]">
                   Anti-Tarnish Jewelry
@@ -423,7 +498,6 @@ export default function Header() {
                           ? `${item.widescreenPrefix}${item.label}`
                           : item.label}
                       </span>
-                      <span className="text-[#8C671A]">→</span>
                     </Link>
                   ))}
                 </div>
@@ -534,21 +608,34 @@ export default function Header() {
             <span className="text-[9px] font-semibold tracking-wider uppercase">Gifting</span>
           </a>
 
-          {/* 4. WhatsApp Orders */}
-          <a
-            href={SOCIAL_LINKS.whatsappUrl(
-              "Hi Shiqueen! I would like to inquire about your jewelry collection & custom gift hampers."
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-col items-center justify-center gap-0.5 py-1 text-[#1E7E34] transition active:scale-95"
+          {/* 4. Royal Bag Drawer Trigger */}
+          <button
+            type="button"
+            onClick={openDrawer}
+            className="flex flex-col items-center justify-center gap-0.5 py-1 text-[#171717] transition hover:text-[#8C671A] active:scale-95"
+            aria-label={`Open shopping bag (${totalItems} items)`}
           >
             <div className="relative">
-              <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#25D366] ring-2 ring-[#FAF6EE]" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5 text-[#8C671A]"
+                aria-hidden="true"
+              >
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              <span className="absolute -top-1.5 -right-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#171717] px-1 text-[8.5px] font-bold text-[#FAF6EE] ring-2 ring-[#FAF6EE]">
+                {totalItems}
+              </span>
             </div>
-            <span className="text-[9px] font-bold tracking-wider uppercase text-[#1E7E34]">WhatsApp</span>
-          </a>
+            <span className="text-[9px] font-semibold tracking-wider uppercase">Bag</span>
+          </button>
 
           {/* 5. Menu Drawer Trigger */}
           <button

@@ -106,7 +106,7 @@ export default function HeroSection() {
               )}
             </h1>
 
-            <p className="mt-4 max-w-[460px] text-xs font-medium leading-[1.7] text-[#111111] lg:text-sm xl:text-base">
+            <p className="mt-4 max-w-[460px] text-xs font-medium leading-[1.7] text-[#111111]/85 lg:text-sm xl:max-w-[520px] xl:text-base xl:font-semibold xl:text-[#111111]">
               {activeSlide.description}
             </p>
 
@@ -114,10 +114,9 @@ export default function HeroSection() {
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <a
                 href={activeSlide.primaryCta.href}
-                className="inline-flex items-center gap-2 rounded-full bg-[#111111] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#8C671A] xl:px-7 xl:py-3.5 xl:text-xs"
+                className="inline-flex items-center justify-center rounded-full bg-[#111111] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#8C671A] xl:px-7 xl:py-3.5 xl:text-xs"
               >
                 <span>{activeSlide.primaryCta.label}</span>
-                <span aria-hidden="true">→</span>
               </a>
             </div>
           </div>
@@ -192,10 +191,9 @@ export default function HeroSection() {
           <div className="mt-2.5">
             <a
               href={activeSlide.primaryCta.href}
-              className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#111111] shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur-md transition-all duration-200 hover:bg-white active:scale-95"
+              className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/80 px-5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#111111] shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur-md transition-all duration-200 hover:bg-white active:scale-95"
             >
               <span>{activeSlide.primaryCta.label}</span>
-              <span aria-hidden="true" className="text-[#8C671A]">→</span>
             </a>
           </div>
         </div>

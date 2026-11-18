@@ -502,7 +502,7 @@ Please share customization photos, catalog and final pricing!`;
             Customized Hampers &amp;{" "}
             <span className="italic text-[#8C671A]">Jewelry Bouquets</span>
           </h2>
-          <p className="mt-2.5 text-xs leading-relaxed text-[#231C16]/75 sm:text-sm lg:text-base">
+          <p className="mt-2.5 text-xs font-medium leading-relaxed text-[#231C16]/75 sm:text-sm lg:text-base xl:font-semibold xl:text-[#231C16]/85">
             Unforgettable surprises tailor-made for Birthdays, Anniversaries, Bridesmaids &amp; Special Milestones. Handcrafted with love and delivered across India.
           </p>
         </div>
@@ -539,7 +539,7 @@ Please share customization photos, catalog and final pricing!`;
 
                 {/* Occasion Tags */}
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  <span className="font-sans text-xs font-medium text-[#231C16]/60">Perfect for:</span>
+                  <span className="font-sans text-xs font-medium text-[#231C16]/70 xl:font-semibold xl:text-[#231C16]/82">Perfect for:</span>
                   <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
                     Birthdays
                   </span>
@@ -552,7 +552,7 @@ Please share customization photos, catalog and final pricing!`;
                 </div>
 
                 {/* High-Contrast Readable Description */}
-                <p className="mt-4 font-sans text-sm sm:text-base leading-relaxed text-[#231C16] font-medium">
+                <p className="mt-4 font-sans text-sm sm:text-base leading-relaxed text-[#231C16]/80 font-medium xl:font-semibold xl:text-[#231C16]/90">
                   A grand rigid keepsake gift box lined with velvet and warm glow, curated with waterproof anti-tarnish jewelry, watches, chocolates, and handwritten notes.
                 </p>
 
@@ -564,7 +564,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">18K Watch &amp; Jewelry</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Waterproof &amp; anti-tarnish</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Waterproof &amp; anti-tarnish</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
@@ -573,7 +573,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">Ferrero Rocher Box</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Golden sweet indulgence</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Golden sweet indulgence</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
@@ -582,7 +582,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">Fairy Lights &amp; Florals</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Magical warm unboxing glow</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Magical warm unboxing glow</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
@@ -591,7 +591,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">Handwritten Letter</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Custom personalized note</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Custom personalized note</p>
                     </div>
                   </div>
                 </div>
@@ -647,7 +647,7 @@ Please share customization photos, catalog and final pricing!`;
 
                 {/* Occasion Tags */}
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  <span className="font-sans text-xs font-medium text-[#231C16]/60">Perfect for:</span>
+                  <span className="font-sans text-xs font-medium text-[#231C16]/70 xl:font-semibold xl:text-[#231C16]/82">Perfect for:</span>
                   <span className="rounded-full border border-[#DFC99B] bg-[#FAF6EE] px-3.5 py-1 font-sans text-xs font-semibold text-[#8C671A]">
                     Birthdays
                   </span>
@@ -660,7 +660,7 @@ Please share customization photos, catalog and final pricing!`;
                 </div>
 
                 {/* High-Contrast Readable Description */}
-                <p className="mt-4 font-sans text-sm sm:text-base leading-relaxed text-[#231C16] font-medium">
+                <p className="mt-4 font-sans text-sm sm:text-base leading-relaxed text-[#231C16]/80 font-medium xl:font-semibold xl:text-[#231C16]/90">
                   Everlasting preserved blooms that never wilt, lovingly nested with 18K gold-toned anti-tarnish jewelry, multi-layered frosted wrapping, and golden satin bow.
                 </p>
 
@@ -672,7 +672,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">18K Necklace &amp; Hoops</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Waterproof demi-fine pieces</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Waterproof demi-fine pieces</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
@@ -681,7 +681,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">Everlasting Silk Blooms</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Preserved petals that never wilt</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Preserved petals that never wilt</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
@@ -690,7 +690,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">Pastel Frosted Wrap</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Luxury satin bow &amp; tag</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Luxury satin bow &amp; tag</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#DFC99B]/80 bg-[#FAF7F2] p-3.5">
@@ -699,7 +699,7 @@ Please share customization photos, catalog and final pricing!`;
                     </div>
                     <div>
                       <p className="font-sans text-sm font-bold text-[#231C16]">Anti-Damage Flower Box</p>
-                      <p className="font-sans text-xs text-[#554D44] font-medium">Safe Pan-India delivery transit</p>
+                      <p className="font-sans text-xs text-[#231C16]/70 font-medium xl:font-semibold xl:text-[#231C16]/82">Safe Pan-India delivery transit</p>
                     </div>
                   </div>
                 </div>
@@ -736,7 +736,7 @@ Please share customization photos, catalog and final pricing!`;
             <h3 className="mt-2.5 font-serif text-2xl font-bold text-[#231C16] sm:text-3xl lg:text-4xl">
               Build Your Custom Surprise
             </h3>
-            <p className="mt-1 font-sans text-xs text-[#231C16]/70 sm:text-sm">
+            <p className="mt-1 font-sans text-xs font-medium text-[#231C16]/75 sm:text-sm xl:text-[15px] xl:font-semibold xl:text-[#231C16]/85">
               Select your preferred creation, occasion theme &amp; luxury add-ons below with live WhatsApp order preview.
             </p>
           </div>
@@ -822,7 +822,7 @@ Please share customization photos, catalog and final pricing!`;
                       <h4 className="mt-1 font-serif text-2xl font-bold text-[#231C16] sm:text-3xl">
                         {currentPreviewObj.label}
                       </h4>
-                      <p className="mt-1.5 font-sans text-xs text-[#231C16]/75 leading-relaxed sm:text-[13px]">
+                      <p className="mt-1.5 font-sans text-xs font-medium text-[#231C16]/75 leading-relaxed sm:text-[13px] xl:text-sm xl:font-semibold xl:text-[#231C16]/85">
                         {currentPreviewObj.subtitle}
                       </p>
 
@@ -831,7 +831,7 @@ Please share customization photos, catalog and final pricing!`;
                         {currentPreviewObj.features.map((feat, idx) => (
                           <li
                             key={idx}
-                            className="flex items-center gap-2 font-sans text-xs text-[#231C16]/85"
+                            className="flex items-center gap-2 font-sans text-xs font-medium text-[#231C16]/85 xl:text-[13px] xl:font-semibold"
                           >
                             <span className="text-[#8C671A] font-bold text-xs">✦</span>
                             <span>{feat}</span>
@@ -843,7 +843,7 @@ Please share customization photos, catalog and final pricing!`;
                     {/* Action Row */}
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-[#F0EAE0] pt-4">
                       <div>
-                        <p className="font-sans text-[10px] uppercase tracking-wider text-[#888888]">
+                        <p className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[#231C16]/65 xl:text-[11px] xl:font-bold">
                           Starting From
                         </p>
                         <p className="font-sans text-2xl font-bold text-[#8C671A]">
@@ -857,9 +857,9 @@ Please share customization photos, catalog and final pricing!`;
                           handleCommitType(currentPreviewObj.id);
                           setActiveStep(2);
                         }}
-                        className="inline-flex items-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] px-7 py-3 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg cursor-pointer"
+                        className="inline-flex items-center justify-center rounded-full bg-[#8C671A] hover:bg-[#735312] px-7 py-3 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg cursor-pointer"
                       >
-                        <span>Select &amp; Proceed to Step 2 →</span>
+                        <span>Select &amp; Proceed to Step 2</span>
                       </button>
                     </div>
                   </div>
@@ -937,7 +937,7 @@ Please share customization photos, catalog and final pricing!`;
                   onClick={() => setActiveStep(1)}
                   className="inline-flex items-center gap-1.5 font-sans text-xs font-bold text-[#666666] transition hover:text-[#231C16] cursor-pointer"
                 >
-                  <span>← Back to Creation</span>
+                  <span>Back to Creation</span>
                 </button>
 
                 <button
@@ -950,12 +950,12 @@ Please share customization photos, catalog and final pricing!`;
                       setActiveStep(3);
                     }
                   }}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] px-8 py-3 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-full bg-[#8C671A] hover:bg-[#735312] px-8 py-3 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg cursor-pointer"
                 >
                   <span>
                     {selectedOccasion !== ""
-                      ? "Continue to Step 3: Curate Add-ons →"
-                      : "Select an Occasion to Proceed →"}
+                      ? "Continue to Step 3: Curate Add-ons"
+                      : "Select an Occasion to Proceed"}
                   </span>
                 </button>
               </div>
@@ -1054,7 +1054,7 @@ Please share customization photos, catalog and final pricing!`;
                       className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-full bg-[#8C671A] hover:bg-[#735312] py-3.5 px-6 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg"
                     >
                       <WhatsAppIcon className="h-4 w-4 text-[#F7DFC2]" />
-                      <span>Order This Exact Box on WhatsApp →</span>
+                      <span>Order This Exact Box on WhatsApp</span>
                     </a>
                   </div>
                 </div>
@@ -1131,7 +1131,7 @@ Please share customization photos, catalog and final pricing!`;
                       onClick={() => setActiveStep(2)}
                       className="inline-flex items-center gap-1.5 font-sans text-xs font-bold text-[#666666] transition hover:text-[#231C16] cursor-pointer"
                     >
-                      <span>← Back to Occasion</span>
+                      <span>Back to Occasion</span>
                     </button>
 
                     <button

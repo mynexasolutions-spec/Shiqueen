@@ -72,16 +72,16 @@ export default function CollectionView({
 
             {platings.length > 2 && (
               <div className="hidden items-center gap-1.5 border-l border-[#E5DEC9] pl-3 sm:flex">
-                <span className="text-[11px] font-medium text-[#171717]/60">Finish:</span>
+                <span className="text-[11px] font-medium text-[#171717]/70 xl:text-xs xl:font-semibold xl:text-[#171717]/82">Finish:</span>
                 {platings.map((p) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setSelectedPlating(p)}
-                    className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition xl:text-[11px] ${
                       selectedPlating === p
                         ? "bg-[#8C671A] text-white"
-                        : "bg-[#FAF7F2] text-[#171717]/70 hover:bg-[#E5DEC9]"
+                        : "bg-[#FAF7F2] text-[#171717]/75 hover:bg-[#E5DEC9] xl:font-bold"
                     }`}
                   >
                     {p}
@@ -93,7 +93,7 @@ export default function CollectionView({
 
           {/* Right: Sort Dropdown */}
           <div className="flex items-center gap-2">
-            <label htmlFor="sort-select" className="text-xs font-medium text-[#171717]/70">
+            <label htmlFor="sort-select" className="text-xs font-medium text-[#171717]/70 xl:text-[13px] xl:font-semibold xl:text-[#171717]/82">
               Sort by:
             </label>
             <select
@@ -112,7 +112,7 @@ export default function CollectionView({
 
         {/* Product Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-5 xl:gap-6 2xl:gap-7">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

@@ -56,7 +56,7 @@ export default function AntiTarnishProof() {
             Waterproof. Sweatproof.{" "}
             <span className="italic text-[#8C671A]">Life-Proof.</span>
           </h2>
-          <p className="mt-3 text-xs leading-relaxed text-[#231C16]/75 sm:text-sm lg:text-base">
+          <p className="mt-3 text-xs font-medium leading-relaxed text-[#231C16]/75 sm:text-sm lg:text-base xl:font-semibold xl:text-[#231C16]/85">
             Say goodbye to faded black jewelry and green skin stains. Engineered with medical-grade 316L stainless steel &amp; 18K gold vacuum PVD molecular bonding.
           </p>
         </div>
@@ -105,10 +105,10 @@ export default function AntiTarnishProof() {
         {/* Quick Stylist Consultation Bar */}
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-[#DFC99B] bg-white p-5 sm:px-8 shadow-xs">
           <div>
-            <p className="font-sans text-xs font-bold text-[#231C16]">
+            <p className="font-sans text-xs font-bold text-[#231C16] xl:text-sm">
               Have questions about sizing, anti-tarnish warranty, or delivery dates?
             </p>
-            <p className="font-sans text-[11px] text-[#666666]">
+            <p className="mt-0.5 font-sans text-[11px] font-medium text-[#231C16]/70 xl:text-xs xl:font-semibold xl:text-[#231C16]/82">
               Our personal stylists are available 1-on-1 on WhatsApp to guide you.
             </p>
           </div>

@@ -20,7 +20,7 @@ export default function CollectionHeader({
     <div className="border-b border-[#E5DEC9] bg-[#FAF7F2] py-8 sm:py-12">
       <div className="mx-auto max-w-[1760px] px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[#171717]/60">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-[#171717]/70 xl:text-[13px] xl:font-semibold xl:text-[#171717]/82">
           <Link href="/" className="transition hover:text-[#8C671A]">
             Home
           </Link>
@@ -29,13 +29,13 @@ export default function CollectionHeader({
             Collections
           </Link>
           <span>/</span>
-          <span className="font-semibold text-[#171717]">{collection.name}</span>
+          <span className="font-semibold text-[#171717] xl:font-bold">{collection.name}</span>
         </nav>
 
         {/* Collection Title & Pitch */}
         <div className="mt-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#8C671A]/30 bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#8C671A] shadow-xs backdrop-blur-xs">
-            <span>✨ {collection.badge}</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#8C671A]/30 bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#8C671A] shadow-xs backdrop-blur-xs xl:text-[11px]">
+            <span>✦ {collection.badge}</span>
             <span>•</span>
             <span>{totalCount} Designs</span>
           </div>
@@ -44,7 +44,7 @@ export default function CollectionHeader({
             {collection.name}
           </h1>
 
-          <p className="mt-2 text-sm leading-relaxed text-[#171717]/70 sm:text-base">
+          <p className="mt-2 text-sm font-medium leading-relaxed text-[#171717]/75 sm:text-base xl:font-semibold xl:text-[#171717]/85">
             {collection.description}
           </p>
         </div>

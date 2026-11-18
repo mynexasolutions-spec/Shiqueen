@@ -340,7 +340,7 @@ export interface ProductItem {
 export const FEATURED_PRODUCTS: ProductItem[] = [
   {
     id: "aura-triple-necklace",
-    name: "Aura Triple Layered Bar Necklace",
+    name: "Aura Layered Bar Necklace",
     category: "jewelry",
     categoryLabel: "Anti-Tarnish Jewelry",
     image: "/images/products/aura-triple-bar-studio.jpg",
@@ -353,7 +353,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "luxe-solitaire-hoops",
-    name: "Luxe Solitaire Stud & Classic Hoop Set",
+    name: "Luxe Solitaire & Hoop Duo",
     category: "jewelry",
     categoryLabel: "Anti-Tarnish Jewelry",
     image: "/images/products/luxe-solitaire-hoops-studio.jpg",
@@ -366,7 +366,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "eternal-chain-cuff",
-    name: "Eternal Paperclip Chain & Cuff Duo",
+    name: "Eternal Chain & Cuff Duo",
     category: "jewelry",
     categoryLabel: "Anti-Tarnish Jewelry",
     image: "/images/categories/cat-bracelets.jpg",
@@ -379,7 +379,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "starlight-stacking-rings",
-    name: "Starlight Triple Stacking Ring Trio",
+    name: "Starlight Stacking Ring Trio",
     category: "jewelry",
     categoryLabel: "Anti-Tarnish Jewelry",
     image: "/images/products/starlight-rings-studio.jpg",
@@ -405,7 +405,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "noor-kundan-choker-set",
-    name: "Noor Kundan & Pearl Choker Set",
+    name: "Noor Kundan & Pearl Choker",
     category: "festive",
     categoryLabel: "Festive & Ethnic Sets",
     image: "/images/products/noor-kundan-choker-studio.jpg",
@@ -418,7 +418,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "queens-keepsake-hamper",
-    name: "The Queen's Keepsake Luxury Gift Box",
+    name: "Queen's Keepsake Gift Box",
     category: "gifting",
     categoryLabel: "Customized Gift Hampers",
     image: "/images/categories/cat-hampers.jpg",
@@ -431,7 +431,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "blush-rose-jewelry-bouquet",
-    name: "Blush Rose & Gold Jewelry Bouquet",
+    name: "Blush Rose Jewelry Bouquet",
     category: "gifting",
     categoryLabel: "Jewelry Bouquets",
     image: "/images/categories/cat-bouquets.jpg",

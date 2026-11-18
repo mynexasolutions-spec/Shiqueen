@@ -150,7 +150,7 @@ export default function TrustMarquee() {
                 Loved by 10,000+ Queens{" "}
                 <span className="italic text-[#8C671A]">Across India</span>
               </h2>
-              <p className="mt-1.5 text-xs text-[#231C16]/75 sm:text-sm">
+              <p className="mt-1.5 text-xs font-medium text-[#231C16]/75 sm:text-sm xl:text-[15px] xl:font-semibold xl:text-[#231C16]/85">
                 Real stories from verified buyers wearing Shiqueen waterproof jewelry 24/7.
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function TrustMarquee() {
                       </span>
                     </div>
 
-                    <p className="mt-4 font-sans text-xs italic leading-relaxed text-[#231C16]/85 sm:text-[13px] 2xl:text-sm">
+                    <p className="mt-4 font-sans text-xs font-medium italic leading-relaxed text-[#231C16]/80 sm:text-[13px] xl:font-semibold xl:text-[#231C16]/90 2xl:text-sm">
                       &ldquo;{rev.quote}&rdquo;
                     </p>
                   </div>
@@ -214,9 +214,9 @@ export default function TrustMarquee() {
                   <div className="mt-6 border-t border-[#F0EAE0] pt-4">
                     <p className="font-sans text-xs 2xl:text-sm font-bold text-[#231C16]">
                       {rev.author}{" "}
-                      <span className="font-normal text-[#888888]">• {rev.location}</span>
+                      <span className="font-medium text-[#231C16]/65 xl:font-semibold xl:text-[#231C16]/75">• {rev.location}</span>
                     </p>
-                    <p className="mt-0.5 font-sans text-[10.5px] 2xl:text-xs font-medium text-[#8C671A] line-clamp-1">
+                    <p className="mt-0.5 font-sans text-[10.5px] 2xl:text-xs font-semibold text-[#8C671A] line-clamp-1">
                       Purchased: {rev.product}
                     </p>
                   </div>
