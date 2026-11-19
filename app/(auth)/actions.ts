@@ -24,8 +24,17 @@ const DUMMY_HASH =
 
 function safeNext(next: FormDataEntryValue | null, role: Role) {
   const n = typeof next === "string" ? next : "";
-  const valid = n.startsWith("/") && !n.startsWith("//") && !n.startsWith("/\\") && !n.startsWith("/login") && !n.startsWith("/signup");
-  if (role === "admin") return valid && n.startsWith("/admin") ? n : "/admin";
+  const valid =
+    n.startsWith("/") &&
+    !n.startsWith("//") &&
+    !n.startsWith("/\\") &&
+    !n.startsWith("/login") &&
+    !n.startsWith("/signup") &&
+    !n.startsWith("/admin/login");
+  if (role === "admin") {
+    if (n === "/admin/dashboard" || n === "/admin/login") return "/admin";
+    return valid && n.startsWith("/admin") ? n : "/admin";
+  }
   return valid && !n.startsWith("/admin") ? n : "/account";
 }
 

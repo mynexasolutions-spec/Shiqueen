@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ImageOff, Package, Plus } from "lucide-react";
+import { ImageOff, Package, Pencil, Plus } from "lucide-react";
 import { listProductsAdmin } from "@/lib/server/admin/products";
 import { listCategoriesAdmin } from "@/lib/server/admin/categories";
 import { getSettings } from "@/lib/server/settings";
 import { Badge, Card, EmptyState, FilterSelect, PageHeader, Pagination, SearchBar, withParams } from "@/components/admin/ui";
 import { Alert } from "@/components/ui/form";
 import { buttonClass } from "@/components/ui/button-class";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteProductAction } from "@/app/admin/_actions/products";
 import { inr } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Products" };
@@ -128,6 +130,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     <th className="px-4 py-3.5 font-semibold">Stock</th>
                     <th className="px-4 py-3.5 font-semibold">Category</th>
                     <th className="px-6 py-3.5 text-right font-semibold">Price</th>
+                    <th className="px-6 py-3.5 text-right font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EFE8DD]">
@@ -156,6 +159,22 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                         <span className="font-semibold">{inr(p.price)}</span>
                         {p.compare_at_price > p.price && <span className="ml-2 text-[15px] text-[#171717]/50 line-through">{inr(p.compare_at_price)}</span>}
                       </td>
+                      <td className="whitespace-nowrap px-6 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/admin/products/${p.id}`} className={buttonClass("secondary", "sm")}>
+                            <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
+                          </Link>
+                          <DeleteButton
+                            action={deleteProductAction}
+                            id={p.id}
+                            confirmText={`Delete “${p.name}”? This can't be undone.`}
+                            label="Delete"
+                            size="sm"
+                            variant="secondary"
+                            className="border-[#F4C7C3] text-[#912018] hover:border-[#B42318] hover:bg-[#FEF3F2] hover:text-[#912018]"
+                          />
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -165,13 +184,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             {/* Mobile cards */}
             <ul className="divide-y divide-[#EFE8DD] md:hidden">
               {data.items.map((p) => (
-                <li key={p.id}>
-                  <Link href={`/admin/products/${p.id}`} className="flex gap-4 px-4 py-4">
+                <li key={p.id} className="p-4">
+                  <div className="flex gap-4">
                     <Thumb src={p.image} />
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-[#171717]">{p.name}</p>
+                      <Link href={`/admin/products/${p.id}`} className="block font-semibold text-[#171717] hover:text-[#8C671A]">
+                        {p.name}
+                      </Link>
                       <p className="mt-0.5 text-base">
                         <span className="font-semibold">{inr(p.price)}</span>
+                        {p.compare_at_price > p.price && (
+                          <span className="ml-2 text-[14px] text-[#171717]/50 line-through">{inr(p.compare_at_price)}</span>
+                        )}
                         {p.category_name && <span className="text-[#171717]/60"> · {p.category_name}</span>}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -179,7 +203,21 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                         <StockBadge stock={p.stock} track={p.track_inventory} low={low} />
                       </div>
                     </div>
-                  </Link>
+                  </div>
+                  <div className="mt-3 flex items-center justify-end gap-2 border-t border-[#EFE8DD] pt-3">
+                    <Link href={`/admin/products/${p.id}`} className={buttonClass("secondary", "sm")}>
+                      <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
+                    </Link>
+                    <DeleteButton
+                      action={deleteProductAction}
+                      id={p.id}
+                      confirmText={`Delete “${p.name}”? This can't be undone.`}
+                      label="Delete"
+                      size="sm"
+                      variant="secondary"
+                      className="border-[#F4C7C3] text-[#912018] hover:border-[#B42318] hover:bg-[#FEF3F2] hover:text-[#912018]"
+                    />
+                  </div>
                 </li>
               ))}
             </ul>

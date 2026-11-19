@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "ik.imagekit.io" }],
   },
+  async redirects() {
+    return [
+      { source: "/admin/login", destination: "/admin", permanent: false },
+      { source: "/admin/dashboard", destination: "/admin", permanent: false },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

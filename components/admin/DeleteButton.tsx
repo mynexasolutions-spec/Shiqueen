@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Trash2 } from "lucide-react";
 import { Alert, SubmitButton } from "@/components/ui/form";
+import type { Size, Variant } from "@/components/ui/button-class";
 
 type Action = (prev: { error?: string; message?: string }, fd: FormData) => Promise<{ error?: string; message?: string }>;
 
@@ -12,11 +13,17 @@ export default function DeleteButton({
   id,
   confirmText,
   label = "Delete",
+  size = "md",
+  variant = "danger",
+  className,
 }: {
   action: Action;
   id: string;
   confirmText: string;
   label?: string;
+  size?: Size;
+  variant?: Variant;
+  className?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
@@ -25,14 +32,24 @@ export default function DeleteButton({
       onSubmit={(e) => {
         if (!window.confirm(confirmText)) e.preventDefault();
       }}
-      className="space-y-3"
+      className={size === "sm" ? "inline-block" : "space-y-3"}
     >
       <input type="hidden" name="id" value={id} />
-      {state.error && <Alert tone="error">{state.error}</Alert>}
-      <SubmitButton variant="danger" pending={pending} pendingText="Deleting…">
-        <Trash2 className="h-5 w-5" aria-hidden="true" />
+      <SubmitButton
+        variant={variant}
+        size={size}
+        pending={pending}
+        pendingText="Deleting…"
+        className={className}
+      >
+        <Trash2 className={size === "sm" ? "h-4 w-4" : "h-5 w-5"} aria-hidden="true" />
         {label}
       </SubmitButton>
+      {state.error && (
+        <div className={size === "sm" ? "mt-2 w-full max-w-sm" : ""}>
+          <Alert tone="error">{state.error}</Alert>
+        </div>
+      )}
     </form>
   );
 }

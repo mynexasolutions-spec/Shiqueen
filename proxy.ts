@@ -7,7 +7,11 @@ export function proxy(request: NextRequest) {
   if (!request.cookies.has("sq_session")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.search = `?next=${encodeURIComponent(request.nextUrl.pathname)}`;
+    const target =
+      request.nextUrl.pathname === "/admin/login" || request.nextUrl.pathname === "/admin/dashboard"
+        ? "/admin"
+        : request.nextUrl.pathname;
+    url.search = `?next=${encodeURIComponent(target)}`;
     return NextResponse.redirect(url);
   }
   return NextResponse.next();

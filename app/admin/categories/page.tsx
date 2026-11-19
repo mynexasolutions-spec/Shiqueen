@@ -6,6 +6,8 @@ import { listCategoriesAdmin } from "@/lib/server/admin/categories";
 import { Badge, Card, EmptyState, PageHeader } from "@/components/admin/ui";
 import { Alert } from "@/components/ui/form";
 import { buttonClass } from "@/components/ui/button-class";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteCategoryAction } from "@/app/admin/_actions/categories";
 
 export const metadata: Metadata = { title: "Categories" };
 
@@ -80,13 +82,22 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2 sm:shrink-0" style={{ paddingLeft: undefined }}>
+                <div className="flex flex-wrap items-center gap-2 sm:shrink-0" style={{ paddingLeft: undefined }}>
                   <Link href={`/admin/categories/new?parent=${c.id}`} className={buttonClass("secondary", "sm")}>
                     <Plus className="h-4 w-4" aria-hidden="true" /> Sub-category
                   </Link>
                   <Link href={`/admin/categories/${c.id}`} className={buttonClass("secondary", "sm")}>
                     <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
                   </Link>
+                  <DeleteButton
+                    action={deleteCategoryAction}
+                    id={c.id}
+                    confirmText={`Delete the category “${c.name}”? This can't be undone.`}
+                    label="Delete"
+                    size="sm"
+                    variant="secondary"
+                    className="border-[#F4C7C3] text-[#912018] hover:border-[#B42318] hover:bg-[#FEF3F2] hover:text-[#912018]"
+                  />
                 </div>
               </li>
             ))}

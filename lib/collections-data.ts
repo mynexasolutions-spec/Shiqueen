@@ -106,7 +106,7 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
     name: "Custom Gift Hampers",
     tagline: "Bespoke Keepsake Boxes with Jewelry & Blooms",
     description:
-      "Handcrafted luxury gift hampers curated with anti-tarnish jewelry, watches, fairy lights, chocolates & personalized handwritten wax-sealed notes.",
+      "Handcrafted luxury gift hampers curated with anti-tarnish jewelry, watches, fairy lights, chocolates & personalized handwritten notes.",
     badge: "Made to Order",
     bannerImage: "/images/categories/cat-hampers.jpg",
     subcategories: ["All", "Gift Boxes", "Bridal Hampers", "Anniversary"],
