@@ -396,6 +396,17 @@ export default function CheckoutPage() {
                   </label>
                   )}
                 </div>
+                {!(ctx?.settings.codEnabled ?? pay.cod_enabled) && (
+                  <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-[#DFC99B]/60 bg-[#FAF6EE] p-3 text-xs text-[#2C241D]/90">
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#8C671A] text-[10px] font-bold text-white mt-0.5">ℹ</span>
+                    <div>
+                      <p className="font-semibold text-[#111111]">Prepaid Orders Only • COD Unavailable</p>
+                      <p className="mt-0.5 text-[11px] text-[#171717]/70 leading-relaxed">
+                        To guarantee safe express transit and swift dispatches, we accept 100% secure payments via UPI (GPay, PhonePe, Paytm), Debit/Credit Cards &amp; NetBanking.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {!codEnabled && (ctx?.settings.codEnabled ?? pay.cod_enabled) && codMax > 0 && (
                   <p className="mt-2 text-xs text-[#171717]/70">Cash on Delivery is available for orders up to ₹{codMax.toLocaleString("en-IN")}.</p>
                 )}

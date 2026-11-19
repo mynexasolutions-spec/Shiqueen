@@ -938,7 +938,7 @@ export default function ProductDetailView({
                 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#171717]/70 xl:text-xs xl:font-bold xl:text-[#171717]/85"
               >
                 <MapPinTrackSvg className="h-3.5 w-3.5 text-[#8C671A] xl:h-4 xl:w-4" />
-                <span>Check Express Delivery &amp; COD Availability</span>
+                <span>Check Express Delivery Availability</span>
               </label>
               <div className="relative mt-2 flex w-full items-center">
                 <input

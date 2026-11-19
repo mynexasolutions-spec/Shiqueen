@@ -336,7 +336,7 @@ export const DEFAULT_CONTENT: SiteContent = {
     gift_wrap_label: "Is it a gift? Make it Special",
     gift_wrap_badge: "Keepsake Wrap",
     delivery_days: 3,
-    pincode_message: "Express Delivery by {date} to {pincode} • Free Shipping & COD Available",
+    pincode_message: "Express Delivery by {date} to {pincode} • Free Shipping (Prepaid Only)",
     trust_badges: ["Damage Protection", "Delivery Guaranteed", "Secure Transaction", "Easy Order Tracking"],
     offers_title: "Exclusive Sitewide Offers & Coupons",
     offers_subtitle: "Click any code to copy for checkout",
@@ -376,7 +376,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       { feature: "Perfume Tolerance", ours: "High PVD Seal", others: "Instant tarnish" },
     ],
     delivery_title: "Fast-Track Pan-India Delivery Journey",
-    delivery_badge: "Free Express Shipping & COD Available",
+    delivery_badge: "Free Express Shipping • 100% Prepaid Delivery",
     delivery_steps: [
       { step: "Step 01 • Today", title: "Instant Order Confirmation", text: "Order locked immediately with live WhatsApp & SMS tracking link." },
       { step: "Step 02 • Within 24 Hours", title: "2-Stage Quality Check & Dispatch", text: "Hand-inspected for finish perfection & packed in Shiqueen keepsake box." },

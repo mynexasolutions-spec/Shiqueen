@@ -342,7 +342,12 @@ export default function CartDrawer() {
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2.5">
+              <div className="mt-3 flex items-center justify-center gap-1.5 rounded-full border border-[#DFC99B]/60 bg-[#FAF6EE] py-1 px-3 text-[11px] font-medium text-[#8C671A]">
+                <span className="text-[10px]">✦</span>
+                <span>Prepaid Orders Only • 100% Safe UPI &amp; Cards</span>
+              </div>
+
+              <div className="mt-3 space-y-2.5">
                 <Link
                   href="/checkout"
                   onClick={closeDrawer}

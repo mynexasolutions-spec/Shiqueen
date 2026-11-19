@@ -13,7 +13,7 @@ export default async function CategoryGrid() {
     <section
       id="categories"
       aria-label="Shop by Category"
-      className="border-b border-[#E5DEC9] bg-[#FAF7F2] py-14 sm:py-16 lg:py-20"
+      className="border-b border-[#E5DEC9] bg-[#FAF7F2] pt-12 pb-7 sm:pt-16 sm:pb-9 lg:pt-20 lg:pb-12"
     >
       <div className="mx-auto max-w-[1760px] px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
         {/* Section Header */}

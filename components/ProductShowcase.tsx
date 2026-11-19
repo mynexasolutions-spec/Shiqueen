@@ -80,7 +80,7 @@ export default function ProductShowcase({
     <section
       id="bestsellers"
       aria-label="Trending Creations"
-      className="border-b border-[#E5DEC9] bg-[#F7F3EB] py-14 sm:py-16 lg:py-20"
+      className="border-b border-[#E5DEC9] bg-[#F7F3EB] pt-7 pb-14 sm:pt-9 sm:pb-16 lg:pt-12 lg:pb-20"
     >
       <div className="mx-auto max-w-[1760px] px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
         {/* Header & Section Title */}

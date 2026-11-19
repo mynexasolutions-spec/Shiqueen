@@ -44,22 +44,24 @@ Please share the unboxing video and order details on our WhatsApp support at +91
   },
   {
     slug: "shipping-policy",
-    title: "Shipping & Delivery Policy",
-    published: false,
-    body: `We ship across India.
+    title: "Shipping & Delivery Policy – SHIQUEEN",
+    published: true,
+    body: `We ship across 19,000+ pin codes in India with trusted logistics partners including Blue Dart and Delhivery.
 
-## Dispatch
-Orders are checked, packed and dispatched within 24 hours on working days.
+## Dispatch & Processing
+Orders are quality-checked, hand-packed in Shiqueen keepsake boxes, and dispatched within 24 hours on working days.
 
-## Delivery times
-- Metro cities: 1–3 working days
-- Rest of India: 3–5 working days
+## Delivery Timelines
+- **Metro Cities:** 1–3 working days (Express Air)
+- **Rest of India:** 3–5 working days
 
-## Tracking
-Once your order ships, you'll receive the courier name and tracking number by email, and you can follow it from **My account → My orders**.
+## Live Tracking
+Once your order is dispatched, you will receive live tracking links via WhatsApp and email. You can also track your order directly from **My Account → Orders**.
 
-## Shipping charges
-Shipping charges, if any, are shown at checkout before you place your order.`,
+## Payment Modes & COD Availability
+To guarantee fast-track, contactless, and safe transit, we currently accept **100% secure Prepaid orders** via UPI (Google Pay, PhonePe, Paytm), Debit/Credit Cards, and NetBanking.
+
+**Cash on Delivery (COD) is currently unavailable.** All orders must be completed through secure online prepaid checkout to avoid delivery delays.`,
   },
   {
     slug: "privacy-policy",
