@@ -177,6 +177,8 @@ export interface ProductPageContent {
   care_donts_title: string;
   care_donts_subtitle: string;
   care_donts: string[];
+  care_disclaimer_title?: string;
+  care_disclaimer_text?: string;
   featured_in_eyebrow: string;
   featured_in: string[];
   related_eyebrow: string;

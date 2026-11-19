@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${collection.name} — 100% Anti-Tarnish Jewelry | ${BRAND.name}`,
+    title: `${collection.name} — Long-Lasting Anti-Tarnish Jewelry | ${BRAND.name}`,
     description: collection.description,
     openGraph: {
       title: `${collection.name} | ${BRAND.name}`,

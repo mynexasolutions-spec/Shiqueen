@@ -340,7 +340,7 @@ Please share customization photos, catalog and final pricing!`;
                             isViewing ? "text-[#FAF6EE]" : "text-[#8C671A] font-semibold"
                           }`}
                         >
-                          Starts ₹{t.basePrice.toLocaleString("en-IN")}
+                          From ₹{t.basePrice.toLocaleString("en-IN")}
                         </p>
                       </div>
                       {isChosen && (
@@ -401,8 +401,8 @@ Please share customization photos, catalog and final pricing!`;
                     {/* Action Row */}
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-[#F0EAE0] pt-4">
                       <div>
-                        <p className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[#231C16]/65 xl:text-[11px] xl:font-bold">
-                          Starting From
+                        <p className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#231C16]/65 xl:text-[11px]">
+                          STARTING FROM
                         </p>
                         <p className="font-sans text-2xl font-bold text-[#8C671A]">
                           ₹{currentPreviewObj.basePrice.toLocaleString("en-IN")}

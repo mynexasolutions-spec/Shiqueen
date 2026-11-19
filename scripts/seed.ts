@@ -57,7 +57,7 @@ async function main() {
     // ── Information pages (drafts — review, then publish in Admin → Pages) ──
     for (const page of DEFAULT_PAGES) {
       await sql`insert into pages (slug, title, body, is_published) values (${page.slug}, ${page.title}, ${page.body}, ${page.published})
-                on conflict (slug) do nothing`;
+                on conflict (slug) do update set title = excluded.title, body = excluded.body, is_published = excluded.is_published`;
     }
     console.log("✔ Pages");
 

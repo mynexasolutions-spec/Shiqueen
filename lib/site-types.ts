@@ -49,7 +49,9 @@ export interface PublicSite {
 
 /** wa.me link for the store's WhatsApp (or a contact picker if no number is set). */
 export function whatsappUrl(number: string, text: string) {
-  const digits = (number || "").replace(/\D/g, "");
+  let digits = (number || "").replace(/\D/g, "");
+  if (!digits) digits = "917617693687";
+  else if (digits.length === 10) digits = `91${digits}`;
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
 

@@ -23,7 +23,7 @@ export async function sendEmail({ to, subject, html }: SendEmailInput): Promise<
       headers: { "api-key": apiKey, "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify({
         sender: {
-          email: process.env.BREVO_SENDER_EMAIL ?? "shiqueenofficial@gmail.com",
+          email: process.env.BREVO_SENDER_EMAIL ?? "noreply@shiqueen.in",
           name: process.env.BREVO_SENDER_NAME ?? "ShiQueen",
         },
         to: [to],

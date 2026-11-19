@@ -86,7 +86,7 @@ export default function CategoryForm({
             <Field label="Description" htmlFor="description" hint="Shown at the top of the category page.">
               <Textarea id="description" name="description" rows={4} maxLength={2000} defaultValue={initial.description} />
             </Field>
-            <Field label="Badge text" htmlFor="badge" hint="Optional highlight, e.g. “100% Anti-Tarnish”.">
+            <Field label="Badge text" htmlFor="badge" hint="Optional highlight, e.g. “Long-Lasting Anti-Tarnish”.">
               <Input id="badge" name="badge" maxLength={60} defaultValue={initial.badge} />
             </Field>
           </div>

@@ -11,7 +11,7 @@ export const SOCIAL_LINKS = {
   instagramHandle: "@shiqueen.in",
   facebook: "https://www.facebook.com/share/1EBbNkZrMp/",
   whatsappUrl: (text: string) =>
-    `https://wa.me/?text=${encodeURIComponent(text)}`,
+    `https://wa.me/917617693687?text=${encodeURIComponent(text)}`,
 } as const;
 
 export interface CoreService {
@@ -27,8 +27,8 @@ export const CORE_SERVICES: CoreService[] = [
     id: "anti-tarnish-retail",
     title: "Anti-Tarnish & Artificial Jewelry Retail",
     description:
-      "18K gold-toned waterproof Necklaces, Earrings, Bracelets, Rings, Anti-Tarnish Watches & Festive Sets.",
-    badge: "Waterproof & Sweatproof",
+      "18K gold-toned demi-fine Necklaces, Earrings, Bracelets, Rings, Anti-Tarnish Watches & Festive Sets.",
+    badge: "Everyday Wear Friendly",
     icon: "sparkles",
   },
   {
@@ -73,7 +73,7 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
       "Anti-Tarnish Watch",
     ],
     description:
-      "Everyday demi-fine waterproof pieces in Necklaces, Earrings, Bracelets, Rings & Anti-Tarnish Watches.",
+      "Everyday demi-fine pieces in Necklaces, Earrings, Bracelets, Rings & Anti-Tarnish Watches.",
     badge: "5 Subcategories",
   },
   {
@@ -115,7 +115,7 @@ export const ANNOUNCEMENTS: AnnouncementItem[] = [
   {
     id: "anti-tarnish",
     icon: "sparkles",
-    text: "100% Anti-Tarnish & Waterproof Jewelry — Everyday Luxury Crafted For Every Queen",
+    text: "Long-Lasting Anti-Tarnish & Everyday Wear Friendly Jewelry — Everyday Luxury Crafted For Every Queen",
   },
   {
     id: "hampers-bouquets",
@@ -167,7 +167,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     imageAlt:
       "Indian model wearing Shiqueen 18K gold-toned layered anti-tarnish necklaces, hoop earrings, bracelets, and gold wristwatch",
     bgColor: "#DDB091",
-    eyebrow: "100% ANTI-TARNISH • WATERPROOF • SKIN-FRIENDLY",
+    eyebrow: "LONG-LASTING ANTI-TARNISH • EVERYDAY WEAR FRIENDLY • SKIN-SAFE",
     title: "Everyday Luxury, Crafted For Every Queen",
     highlightWord: "Every Queen",
     description:
@@ -274,7 +274,7 @@ export const VISUAL_CATEGORIES: VisualCategory[] = [
     tagline: "Hoops & Solitaires",
     image: "/images/categories/cat-earrings.jpg",
     filterKey: "jewelry",
-    badge: "Waterproof",
+    badge: "Everyday Wear",
   },
   {
     id: "bracelets",
@@ -322,6 +322,22 @@ export const VISUAL_CATEGORIES: VisualCategory[] = [
     filterKey: "gifting",
     badge: "Trending",
   },
+  {
+    id: "oxidised",
+    name: "Oxidised & Antique",
+    tagline: "Statement & Daily Wear",
+    image: "/images/categories/cat-festive.jpg",
+    filterKey: "festive",
+    badge: "Antique Edit",
+  },
+  {
+    id: "mangalsutras",
+    name: "Mangalsutras",
+    tagline: "Modern & Everyday Wear",
+    image: "/images/categories/cat-necklaces.jpg",
+    filterKey: "jewelry",
+    badge: "Everyday Wear",
+  },
 ];
 
 export interface ProductItem {
@@ -347,9 +363,9 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
     price: 1299,
     originalPrice: 2499,
     badge: "Bestseller",
-    features: ["18K Gold Plated", "Waterproof & Sweatproof", "Hypoallergenic"],
+    features: ["18K Gold Plated", "Long-Lasting Anti-Tarnish", "Everyday Wear Friendly"],
     description:
-      "A stunning triple-layered design featuring a sleek vertical bar pendant and sparkling solitaire crystal. 100% anti-tarnish stainless steel crafted for daily wear.",
+      "A stunning triple-layered design featuring a sleek vertical bar pendant and sparkling solitaire crystal. Long-lasting anti-tarnish stainless steel crafted for daily wear.",
   },
   {
     id: "luxe-solitaire-hoops",
@@ -359,10 +375,10 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
     image: "/images/products/luxe-solitaire-hoops-studio.jpg",
     price: 899,
     originalPrice: 1699,
-    badge: "Waterproof",
-    features: ["18K Gold PVD Coating", "AAA Micro-Zircons", "Zero Skin Green"],
+    badge: "Everyday Wear",
+    features: ["18K Gold PVD Coating", "AAA Micro-Zircons", "Hypoallergenic"],
     description:
-      "Timeless everyday duo with comfortable click-closure gold hoops and brilliant faceted solitaire studs. Wear them swimming, showering, or partying without color fade.",
+      "Timeless everyday duo with comfortable click-closure gold hoops and brilliant faceted solitaire studs. Crafted for daily wear, festive looks, or celebrations without color fade.",
   },
   {
     id: "eternal-chain-cuff",
@@ -445,7 +461,7 @@ export const FEATURED_PRODUCTS: ProductItem[] = [
 ];
 
 export const MARQUEE_ITEMS: string[] = [
-  "100% ANTI-TARNISH & WATERPROOF",
+  "LONG-LASTING ANTI-TARNISH & EVERYDAY WEAR FRIENDLY",
   "NECKLACES, EARRINGS, BRACELETS, RINGS & ANTI-TARNISH WATCH",
   "JEWELRY SETS & FESTIVE / ETHNIC SETS",
   "CUSTOMIZED GIFT HAMPERS",

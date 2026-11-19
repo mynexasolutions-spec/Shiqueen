@@ -44,10 +44,10 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
   necklaces: {
     slug: "necklaces",
     name: "Necklaces & Pendants",
-    tagline: "Waterproof, 18K Gold-Plated & Tarnish-Free Chains",
+    tagline: "18K Gold-Plated & Long-Lasting Anti-Tarnish Chains",
     description:
-      "Explore Shiqueen's signature anti-tarnish necklaces crafted in waterproof stainless steel. From everyday layered chains to solitaire pendants, designed to never fade or turn green.",
-    badge: "100% Anti-Tarnish",
+      "Explore Shiqueen's signature anti-tarnish necklaces crafted in premium stainless steel. From everyday layered chains to solitaire pendants, designed for enduring shine and comfort.",
+    badge: "Long-Lasting Anti-Tarnish",
     bannerImage: "/images/categories/cat-necklaces.jpg",
     subcategories: ["All", "Layered", "Pendants", "Chains", "Chokers"],
   },
@@ -56,7 +56,7 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
     name: "Earrings",
     tagline: "Everyday Hoops, Studs & Statement Drops",
     description:
-      "Hypoallergenic, sweatproof, and lightweight earrings crafted for sensitive skin. Wear them to the gym, in the shower, or to weddings with complete peace of mind.",
+      "Hypoallergenic, everyday wear friendly, and lightweight earrings crafted for sensitive skin. Wear them to the gym, daily outings, or to weddings with complete peace of mind.",
     badge: "Hypoallergenic",
     bannerImage: "/images/categories/cat-earrings.jpg",
     subcategories: ["All", "Hoops", "Studs", "Drops", "Huggie"],
@@ -67,7 +67,7 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
     tagline: "Paperclip Chains, Minimalist Cuffs & Tennis Links",
     description:
       "Demi-fine wristwear finished with heavy 18K gold PVD coating. Stack them with your favorite wristwatch or wear solo for an effortless luxury look.",
-    badge: "Waterproof & Sweatproof",
+    badge: "Everyday Wear Friendly",
     bannerImage: "/images/categories/cat-bracelets.jpg",
     subcategories: ["All", "Cuffs", "Link Chains", "Tennis"],
   },
@@ -76,8 +76,8 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
     name: "Rings",
     tagline: "Stacking Bands, Solitaires & Adjustable Rings",
     description:
-      "Tarnish-proof stacking bands and sparkling solitaire rings. Premium stainless steel prevents green fingers and survives daily soap and water.",
-    badge: "Zero Skin Green",
+      "Long-lasting anti-tarnish stacking bands and sparkling solitaire rings. Premium stainless steel prevents green fingers and stands up to daily wear.",
+    badge: "Skin-Safe",
     bannerImage: "/images/categories/cat-rings.jpg",
     subcategories: ["All", "Stacking", "Solitaire", "Bands"],
   },
@@ -86,7 +86,7 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
     name: "Anti-Tarnish Watches",
     tagline: "18K Jubilee Links & Vintage Minimalist Dials",
     description:
-      "Demi-fine ladies wristwatches crafted with waterproof stainless steel link bracelets, fluted bezels, and durable PVD gold plating.",
+      "Demi-fine ladies wristwatches crafted with durable stainless steel link bracelets, fluted bezels, and long-lasting PVD gold plating.",
     badge: "Signature Luxe",
     bannerImage: "/images/categories/cat-watches.jpg",
     subcategories: ["All", "Jubilee Link", "Mesh Strap"],
@@ -121,6 +121,26 @@ export const COLLECTIONS_DATA: Record<string, CollectionMeta> = {
     bannerImage: "/images/categories/cat-bouquets.jpg",
     subcategories: ["All", "Blush Rose", "Everlasting Blooms"],
   },
+  oxidised: {
+    slug: "oxidised",
+    name: "Oxidised & Antique",
+    tagline: "Statement & Daily Wear",
+    description:
+      "Handcrafted oxidised silver and antique jewelry pieces designed for both everyday flair and grand ethnic celebrations.",
+    badge: "Statement & Daily Wear",
+    bannerImage: "/images/categories/cat-festive.jpg",
+    subcategories: ["All", "Earrings", "Necklaces", "Bangles"],
+  },
+  mangalsutras: {
+    slug: "mangalsutras",
+    name: "Mangalsutras",
+    tagline: "Modern & Everyday Wear",
+    description:
+      "Contemporary demi-fine mangalsutras crafted for everyday elegance. Minimalist black beads paired with 18K gold-toned anti-tarnish motifs.",
+    badge: "Modern & Everyday Wear",
+    bannerImage: "/images/categories/cat-necklaces.jpg",
+    subcategories: ["All", "Modern", "Classic", "Dainty"],
+  },
 };
 
 export const MVP_PRODUCTS: CatalogProduct[] = [
@@ -141,9 +161,9 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     inStock: true,
     plating: "18K Gold Plated",
     material: "316L Stainless Steel",
-    features: ["18K Gold PVD Plated", "Waterproof & Sweatproof", "Zero Tarnish"],
+    features: ["18K Gold PVD Plated", "Long-Lasting Anti-Tarnish", "Everyday Wear Friendly"],
     description:
-      "A stunning triple-layered design featuring a sleek vertical bar pendant and sparkling solitaire crystal. 100% anti-tarnish stainless steel crafted for daily wear.",
+      "A stunning triple-layered design featuring a sleek vertical bar pendant and sparkling solitaire crystal. Long-lasting anti-tarnish stainless steel crafted for daily wear.",
   },
   {
     id: "celeste-evil-eye-pendant",
@@ -175,13 +195,13 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     hoverImage: "/images/hero/hero-jewelry-desktop.jpg",
     price: 999,
     originalPrice: 1999,
-    badge: "Waterproof",
+    badge: "Everyday Wear",
     rating: 4.9,
     reviewCount: 112,
     inStock: true,
     plating: "18K Gold Plated",
     material: "316L Stainless Steel",
-    features: ["High-Gloss Polish", "Snag-Free Flexible Links", "Swim-Safe"],
+    features: ["High-Gloss Polish", "Snag-Free Flexible Links", "Everyday Wear Friendly"],
     description:
       "Silky liquid-gold feel that lies flat on your collarbone. Perfect for layering with pendants or wearing as a standalone statement choker.",
   },
@@ -201,7 +221,7 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     inStock: true,
     plating: "18K Gold Plated",
     material: "316L Stainless Steel & Mother of Pearl",
-    features: ["18K Gold PVD", "Adjustable Extender", "Waterproof"],
+    features: ["18K Gold PVD", "Adjustable Extender", "Everyday Wear Friendly"],
     description:
       "Delicate floral clover stations spaced evenly along a fine 18K gold-plated chain. Sits gracefully at the collarbone for effortless everyday elegance.",
   },
@@ -217,7 +237,7 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     hoverImage: "/images/products/luxe-solitaire-hoops-model.jpg",
     price: 899,
     originalPrice: 1699,
-    badge: "Waterproof",
+    badge: "Everyday Wear",
     rating: 4.9,
     reviewCount: 76,
     inStock: true,
@@ -225,7 +245,7 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     material: "Hypoallergenic Stainless Steel",
     features: ["Secure Click Closure", "AAA Micro-Zircons", "Zero Skin Itch"],
     description:
-      "Timeless everyday duo with comfortable click-closure gold hoops and brilliant faceted solitaire studs. Wear them swimming or partying without color fade.",
+      "Timeless everyday duo with comfortable click-closure gold hoops and brilliant faceted solitaire studs. Wear them daily or for celebrations without color fade.",
   },
   {
     id: "celeste-baroque-pearl-drops",
@@ -283,7 +303,7 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     inStock: true,
     plating: "18K Gold Plated",
     material: "316L Stainless Steel & Cubic Zirconia",
-    features: ["Snug Huggie Fit", "Sleep-Friendly Clasp", "Waterproof"],
+    features: ["Snug Huggie Fit", "Sleep-Friendly Clasp", "Everyday Wear Friendly"],
     description:
       "Micro-paved crystal huggie hoops designed for first and second piercings. Comfortable enough to sleep and shower in.",
   },
@@ -319,15 +339,15 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     hoverImage: "/images/hero/hero-jewelry-desktop-v3.jpg",
     price: 1399,
     originalPrice: 2799,
-    badge: "Waterproof",
+    badge: "Everyday Wear",
     rating: 5.0,
     reviewCount: 61,
     inStock: true,
     plating: "18K Gold Plated",
     material: "Bezel Zirconia & Stainless Steel",
-    features: ["Bezel-Set Crystals", "Double Safety Clasp", "Never Tarnish"],
+    features: ["Bezel-Set Crystals", "Double Safety Clasp", "Long-Lasting Shine"],
     description:
-      "A modern bezel-set take on the classic tennis bracelet. Waterproof construction means you never have to take it off.",
+      "A modern bezel-set take on the classic tennis bracelet. Everyday wear friendly construction means you can enjoy it day in, day out.",
   },
   {
     id: "empress-roman-crystal-bangle",
@@ -359,13 +379,13 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     hoverImage: "/images/categories/cat-bracelets.jpg",
     price: 999,
     originalPrice: 1999,
-    badge: "Waterproof",
+    badge: "Everyday Wear",
     rating: 4.8,
     reviewCount: 54,
     inStock: true,
     plating: "18K Gold Plated",
     material: "Mother of Pearl & Stainless Steel",
-    features: ["Double-Sided Motifs", "Lobster Clasp", "100% Tarnish-Free"],
+    features: ["Double-Sided Motifs", "Lobster Clasp", "Long-Lasting Anti-Tarnish"],
     description:
       "Dainty four-leaf clover motifs in iridescent mother of pearl framed by beaded 18K gold borders.",
   },
@@ -427,7 +447,7 @@ export const MVP_PRODUCTS: CatalogProduct[] = [
     inStock: true,
     plating: "18K Gold Plated",
     material: "316L Stainless Steel",
-    features: ["Mirror Gold Polish", "Tapered Band", "Waterproof"],
+    features: ["Mirror Gold Polish", "Tapered Band", "Everyday Wear Friendly"],
     description:
       "Bold yet featherlight high-shine dome ring that makes an instant statement on index or middle fingers.",
   },
@@ -633,7 +653,7 @@ export function getProductSpecifications(product: CatalogProduct): ProductSpecIt
     },
     {
       label: "Durability & Spec",
-      value: "100% Anti-Tarnish, Waterproof, Sweatproof & Skin-Safe",
+      value: "Long-Lasting Anti-Tarnish, Everyday Wear Friendly & Skin-Safe",
     },
   ];
 }

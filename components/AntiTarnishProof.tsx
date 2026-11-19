@@ -5,6 +5,7 @@ import { WhatsAppIcon } from "@/components/Header";
 import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
 import { splitHighlight } from "@/lib/site-types";
 
+// The Shiqueen Standard — Everyday Wear Friendly Anti-Tarnish Proof
 export default function AntiTarnishProof() {
   const home = useSite().content.home;
   const whatsapp = useWhatsApp();

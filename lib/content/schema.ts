@@ -548,6 +548,8 @@ export const SECTIONS: SectionDef[] = [
           { key: "care_donts_title", label: "Don'ts heading", type: "text", max: 60 },
           { key: "care_donts_subtitle", label: "Don'ts subheading", type: "text", max: 100 },
           { key: "care_donts", label: "Don'ts", type: "lines", hint: "One per line." },
+          { key: "care_disclaimer_title", label: "Care disclaimer title", type: "text", max: 80 },
+          { key: "care_disclaimer_text", label: "Care disclaimer note", type: "textarea", rows: 3, max: 500 },
         ],
       },
       {

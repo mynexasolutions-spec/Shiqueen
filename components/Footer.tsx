@@ -118,7 +118,7 @@ export default function Footer() {
   return (
     <footer id="footer" aria-label="Site Footer" className="border-t border-[#332A21] bg-[#1A1410] text-[#FAF6EE]">
       {/* ───────── Mobile accordion footer ───────── */}
-      <div className="px-5 py-8 lg:hidden">
+      <div className="px-5 pt-8 pb-28 lg:hidden">
         <div className="flex items-center gap-3.5">
           <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#8C671A] bg-[#FAF6EE] shadow-md">
             <Image src={brand.logo} alt={`${brand.name} logo`} fill sizes="56px" className="object-cover" />

@@ -131,7 +131,7 @@ function TagOfferSvg({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function RefreshExchangeSvg({ className = "h-4 w-4" }: { className?: string }) {
+function RefreshSvg({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -487,6 +487,32 @@ export default function ProductDetailView({
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Lock body scroll and handle keyboard navigation when fullscreen gallery is open
+  useEffect(() => {
+    if (zoomModalIndex === null) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setZoomModalIndex(null);
+      } else if (e.key === "ArrowRight") {
+        setZoomModalIndex((prev) => (prev !== null ? (prev + 1) % galleryImages.length : null));
+      } else if (e.key === "ArrowLeft") {
+        setZoomModalIndex((prev) =>
+          prev !== null ? (prev - 1 + galleryImages.length) % galleryImages.length : null
+        );
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [zoomModalIndex, galleryImages.length]);
 
   const savings = Math.max(0, product.originalPrice - product.price);
   const discountPercent = Math.round((savings / product.originalPrice) * 100);
@@ -906,7 +932,7 @@ export default function ProductDetailView({
             </div>
 
             {/* Block 6: Pincode Delivery Estimator */}
-            <form onSubmit={handleCheckPincode}>
+            <form onSubmit={handleCheckPincode} className="w-full">
               <label
                 htmlFor="pincode-input"
                 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#171717]/70 xl:text-xs xl:font-bold xl:text-[#171717]/85"
@@ -914,7 +940,7 @@ export default function ProductDetailView({
                 <MapPinTrackSvg className="h-3.5 w-3.5 text-[#8C671A] xl:h-4 xl:w-4" />
                 <span>Check Express Delivery &amp; COD Availability</span>
               </label>
-              <div className="mt-2 flex gap-2.5">
+              <div className="relative mt-2 flex w-full items-center">
                 <input
                   id="pincode-input"
                   type="text"
@@ -922,12 +948,12 @@ export default function ProductDetailView({
                   maxLength={6}
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
-                  placeholder="Enter 6-digit Pincode (e.g. 400001)"
-                  className="flex-1 rounded-full border border-[#E5DEC9] bg-[#FAF7F2] px-4 py-2.5 text-xs font-medium text-[#171717] placeholder:text-[#171717]/50 focus:border-[#8C671A] focus:outline-hidden xl:py-3 xl:text-[13px] xl:font-semibold xl:placeholder:text-[#171717]/60"
+                  placeholder="Enter 6-digit Pincode"
+                  className="w-full min-w-0 rounded-full border border-[#E5DEC9] bg-[#FAF7F2] pl-4 pr-24 py-2.5 text-xs font-medium text-[#171717] placeholder:text-[#171717]/50 focus:border-[#8C671A] focus:outline-hidden xl:py-3 xl:text-[13px] xl:font-semibold xl:placeholder:text-[#171717]/60"
                 />
                 <button
                   type="submit"
-                  className="rounded-full bg-[#EFE8E4] px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#171717] transition hover:bg-[#171717] hover:text-white xl:px-6 xl:py-3 xl:text-[13px]"
+                  className="absolute right-1 top-1 bottom-1 flex items-center justify-center rounded-full bg-[#1A1410] px-4.5 text-xs font-bold uppercase tracking-wider text-white shadow-xs transition hover:bg-[#8C671A] active:scale-95"
                 >
                   Check
                 </button>
@@ -944,7 +970,7 @@ export default function ProductDetailView({
             {pp.trust_badges.length > 0 && (
               <div className="grid grid-cols-2 gap-2.5 border-t border-[#E5DEC9] pt-4 sm:grid-cols-4 xl:gap-3 xl:pt-5">
                 {pp.trust_badges.map((label, i) => {
-                  const Icon = [RefreshExchangeSvg, TruckDeliverySvg, LockSecureSvg, MapPinTrackSvg][i % 4];
+                  const Icon = [RefreshSvg, TruckDeliverySvg, LockSecureSvg, MapPinTrackSvg][i % 4];
                   return (
                     <div key={i} className="flex flex-col items-center justify-center rounded-xl border border-[#E5DEC9] bg-[#FAF7F2] p-2.5 text-center xl:p-3">
                       <Icon className="h-4 w-4 text-[#8C671A] xl:h-5 xl:w-5" />
@@ -1068,7 +1094,7 @@ export default function ProductDetailView({
                 step: "03",
                 mobileLabel: "Shipping & Care",
                 label: "Shipping & Care Guide",
-                sub: "Timeline, Exchange & Do's/Don'ts",
+                sub: "Timeline, Policy & Do's/Don'ts",
                 icon: <TruckDeliverySvg className="h-4 w-4 shrink-0 xl:h-4.5 xl:w-4.5" />,
               },
             ].map((tab) => {
@@ -1460,10 +1486,10 @@ export default function ProductDetailView({
 
                 {/* Bottom Split: Left Policy Table + Right Do's & Don'ts Care Matrix */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 xl:gap-8">
-                  {/* Left 5 Cols: Shipping & Exchange Policy Summary Table */}
+                  {/* Left 5 Cols: Shipping & Return Policy Summary Table */}
                   <div className="overflow-hidden rounded-2xl border border-[#E5DEC9] lg:col-span-5">
                     <div className="flex items-center gap-2 border-b border-[#E5DEC9] bg-[#FAF7F2] px-5 py-3.5 xl:px-6 xl:py-4">
-                      <RefreshExchangeSvg className="h-4 w-4 text-[#8C671A]" />
+                      <RefreshSvg className="h-4 w-4 text-[#8C671A]" />
                       <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-[#111111] xl:text-[13px]">
                         {pp.policy_title}
                       </h4>
@@ -1535,6 +1561,26 @@ export default function ProductDetailView({
                     </div>
                   </div>
                 </div>
+
+                {/* Care & Disclaimer Box */}
+                {(pp.care_disclaimer_text || pp.care_disclaimer_title) && (
+                  <div className="rounded-2xl border border-[#DDB091]/70 bg-[#FAF7F2] p-5 sm:p-6 shadow-2xs">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#8C671A]/10 text-[#8C671A] xl:h-10 xl:w-10">
+                        <ShieldCheckSvg className="h-4.5 w-4.5" />
+                      </span>
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-[#8C671A] sm:text-[13px] xl:text-sm">
+                          {pp.care_disclaimer_title || "Care & Disclaimer"}
+                        </h4>
+                        <p className="text-xs font-medium leading-relaxed text-[#171717]/85 sm:text-[13px] xl:text-sm xl:leading-relaxed">
+                          {pp.care_disclaimer_text ||
+                            "Our anti-tarnish jewellery is designed to resist everyday moisture and sweat. However, plating longevity depends on individual skin chemistry and usage—avoid direct contact with perfumes, sanitizers, harsh chemicals, and swimming pool water to maintain its shine."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1633,59 +1679,117 @@ export default function ProductDetailView({
         </div>
       )}
 
-      {/* 9. Full-Screen Image Zoom Modal (For the 2 Product Images) */}
+      {/* 9. Full-Screen Pure Black Photo Gallery Lightbox */}
       {zoomModalIndex !== null && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black/95 text-white select-none backdrop-blur-md"
           onClick={() => setZoomModalIndex(null)}
         >
+          {/* Top Bar: Title / Counter & Close Button */}
           <div
-            className="relative max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-3xl bg-white p-3 shadow-2xl"
+            className="flex w-full items-center justify-between px-4 py-4 sm:px-8 sm:py-5 z-20"
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider text-white/90 backdrop-blur-xs">
+                {zoomModalIndex + 1} / {galleryImages.length}
+              </span>
+              <span className="hidden sm:inline text-xs font-medium text-white/70">
+                {galleryImages[zoomModalIndex].label}
+              </span>
+            </div>
+
             <button
               type="button"
               onClick={() => setZoomModalIndex(null)}
-              aria-label="Close zoom modal"
-              className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-lg font-bold text-[#111111] shadow-md transition hover:bg-[#111111] hover:text-white"
+              aria-label="Close fullscreen gallery"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition hover:bg-white hover:text-black active:scale-95"
             >
-              ×
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
+          </div>
 
-            <div className="relative aspect-[3/4] max-h-[75vh] w-full overflow-hidden rounded-2xl bg-[#FAF7F2]">
+          {/* Main Full-Screen Photo View with Left/Right Navigation */}
+          <div
+            className="relative flex h-full w-full flex-1 items-center justify-center p-2 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Previous Button (if multiple images) */}
+            {galleryImages.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setZoomModalIndex((prev) =>
+                    prev !== null ? (prev - 1 + galleryImages.length) % galleryImages.length : 0
+                  )
+                }
+                aria-label="Previous photo"
+                className="absolute left-3 sm:left-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white/90 border border-white/15 backdrop-blur-md transition hover:bg-white hover:text-black hover:border-transparent active:scale-95"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+            )}
+
+            {/* Central Full Photo Display */}
+            <div className="relative h-[72vh] sm:h-[78vh] w-full max-w-4xl sm:max-w-5xl">
               <Image
                 src={galleryImages[zoomModalIndex].src}
                 alt={galleryImages[zoomModalIndex].alt}
                 fill
-                sizes="(min-width: 768px) 640px, 100vw"
-                className="object-cover"
+                priority
+                sizes="100vw"
+                className="object-contain"
               />
             </div>
 
-            <div className="mt-3 flex items-center justify-between px-2">
-              <span className="text-xs font-bold text-[#171717]">
-                {galleryImages[zoomModalIndex].label} ({zoomModalIndex + 1} of {galleryImages.length})
-              </span>
-              <div className="flex gap-2">
-                {galleryImages.map((img, i) => (
-                  <button
-                    key={`${img.src}-${i}`}
-                    type="button"
-                    onClick={() => setZoomModalIndex(i)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                      zoomModalIndex === i
-                        ? "bg-[#111111] text-white"
-                        : "bg-[#FAF7F2] text-[#171717]"
-                    }`}
-                  >
-                    {i + 1}. {img.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Next Button (if multiple images) */}
+            {galleryImages.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setZoomModalIndex((prev) =>
+                    prev !== null ? (prev + 1) % galleryImages.length : 0
+                  )
+                }
+                aria-label="Next photo"
+                className="absolute right-3 sm:right-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white/90 border border-white/15 backdrop-blur-md transition hover:bg-white hover:text-black hover:border-transparent active:scale-95"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            )}
           </div>
+
+          {/* Bottom Thumbnail Strip */}
+          {galleryImages.length > 1 && (
+            <div
+              className="flex items-center justify-center gap-3 px-4 py-3 sm:py-5 z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {galleryImages.map((img, i) => (
+                <button
+                  key={`${img.src}-${i}`}
+                  type="button"
+                  onClick={() => setZoomModalIndex(i)}
+                  className={`group relative h-13 w-13 sm:h-16 sm:w-16 overflow-hidden rounded-xl border-2 transition-all ${
+                    zoomModalIndex === i
+                      ? "border-[#DFC99B] scale-105 shadow-[0_0_15px_rgba(223,201,155,0.4)]"
+                      : "border-white/20 opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <Image src={img.src} alt={img.alt} fill sizes="64px" className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

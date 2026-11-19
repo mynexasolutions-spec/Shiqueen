@@ -4,23 +4,43 @@
 export const DEFAULT_PAGES: { slug: string; title: string; body: string; published: boolean }[] = [
   {
     slug: "care-guide",
-    title: "Care & Cleaning Guide",
+    title: "Jewellery Care Guide – SHIQUEEN",
     published: true,
-    body: `Our anti-tarnish jewellery is made to be worn every day. A little care keeps the shine looking new for years.
+    body: `Our pieces are crafted for everyday elegance, and proper care keeps them shining for a long time. Please note that artificial and anti-tarnish jewellery does not carry a polish warranty, as shine longevity depends on usage and care:
 
-## Do
-- Wear it freely in the shower, at the gym and in the rain
-- Apply perfume and lotions first, and let them dry before putting your jewellery on
-- Wipe pieces gently with a soft microfiber cloth after wearing
-- Store each piece in its pouch when travelling
+## For Anti-Tarnish Jewellery
+- Designed to resist daily sweat and light splashes, but avoid prolonged exposure to water, swimming pools, soaps, and harsh chemicals.
+- Always apply perfume, body mist, lotion, or hairspray before wearing your jewellery.
+- Wipe gently with a soft, dry cloth after each use to remove sweat and oils.
 
-## Don't
-- Spray concentrated perfume directly onto the jewellery
-- Keep pieces loose with keys, coins or other sharp metal
-- Use harsh chemical dips or abrasive brushes
-- Pull delicate chains forcefully when unclasping
+## For Oxidised & Antique Jewellery
+- Keep completely away from water, moisture, perfumes, and sweat.
+- Store each piece separately in an airtight zip-lock pouch or dry box to prevent friction and natural oxidation.`,
+  },
+  {
+    slug: "return-policy",
+    title: "Return & Replacement Policy – SHIQUEEN",
+    published: true,
+    body: `At SHIQUEEN, every piece of jewellery and gift hamper is thoroughly inspected and packed with care before dispatch.
 
-Questions about caring for a piece? Message us on WhatsApp and we'll help.`,
+## Strict No-Exchange Policy
+Due to hygiene standards and the delicate nature of fashion and demi-fine jewellery, we do not offer any exchanges or returns for change of mind, style preference, or colour variation due to screen lighting.
+
+## When is a Return/Replacement Accepted?
+We only accept return or replacement requests in the following two cases:
+
+1. You received a physically damaged or broken product in transit.
+2. You received a wrong product (different from the item you ordered on shiqueen.in).
+
+## Mandatory Unboxing Video Proof
+To claim a replacement or refund for a damaged or wrong item, you must record a continuous, unedited 360-degree parcel opening video clearly showing the sealed shipping label before opening and the issue inside. Claims without an unedited unboxing video will not be accepted.
+
+## Reporting Window
+Please share the unboxing video and order details on our WhatsApp support at +91 7617693687 within 24 hours of delivery.
+
+## Non-Returnable Items & Conditions
+- Customized gift hampers and personalized orders cannot be returned or cancelled once confirmed.
+- Plating longevity depends on individual skin chemistry and usage; normal wear and tear, scratches, or fading after use are not eligible for return or refund.`,
   },
   {
     slug: "shipping-policy",
@@ -40,22 +60,6 @@ Once your order ships, you'll receive the courier name and tracking number by em
 
 ## Shipping charges
 Shipping charges, if any, are shown at checkout before you place your order.`,
-  },
-  {
-    slug: "returns-and-exchanges",
-    title: "Returns & Exchanges",
-    published: false,
-    body: `We want you to love your order.
-
-## Exchanges
-If your piece arrives damaged or isn't right, contact us within 3 days of delivery with your order number and photos, and we'll arrange an exchange.
-
-## Conditions
-- Items must be unused and in their original packaging
-- Customised gifts, hampers and bouquets can't be exchanged unless they arrive damaged
-
-## How to request
-Message us on WhatsApp or email us with your order number.`,
   },
   {
     slug: "privacy-policy",

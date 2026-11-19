@@ -135,7 +135,7 @@ export default function ProductForm({
               <Input id="badge" name="badge" maxLength={60} defaultValue={initial.badge} />
             </Field>
             <Field label="Key features" htmlFor="features" hint="One per line.">
-              <Textarea id="features" name="features" rows={4} defaultValue={initial.features.join("\n")} placeholder={"Waterproof & Sweatproof\nZero Tarnish"} />
+              <Textarea id="features" name="features" rows={4} defaultValue={initial.features.join("\n")} placeholder={"Everyday Wear Friendly\nLong-Lasting Anti-Tarnish"} />
             </Field>
 
             <div>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://shiqueen.in"),
   title: "SHIQUEEN — Crafted For Every Queen | Anti-Tarnish Jewelry & Custom Hampers",
   description:
-    "Shop 100% Anti-Tarnish & Waterproof Jewelry (Necklaces, Earrings, Bracelets, Rings, Anti-Tarnish Watches), Festive & Ethnic Sets, Customized Gift Hampers & Jewelry Bouquets with Pan-India Shipping & WhatsApp Order Support.",
+    "Shop Long-Lasting Anti-Tarnish & Everyday Wear Friendly Jewelry (Necklaces, Earrings, Bracelets, Rings, Anti-Tarnish Watches), Festive & Ethnic Sets, Customized Gift Hampers & Jewelry Bouquets with Pan-India Shipping & WhatsApp Order Support.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

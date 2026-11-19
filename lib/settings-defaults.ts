@@ -37,7 +37,7 @@ export interface StoreSettings {
 export const DEFAULT_SETTINGS: StoreSettings = {
   store_name: "SHIQUEEN",
   support_email: "shiqueenofficial@gmail.com",
-  support_phone: "",
+  support_phone: "+91 76176 93687",
   order_notification_email: "shiqueenofficial@gmail.com",
   low_stock_threshold: 5,
 

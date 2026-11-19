@@ -138,7 +138,7 @@ export default function CartDrawer() {
                 Your Royal Bag
               </h2>
               <p className="text-[10px] font-medium uppercase tracking-widest text-[#8C671A]">
-                100% Anti-Tarnish • Free Pan-India Shipping
+                Long-Lasting Anti-Tarnish • Free Pan-India Shipping
               </p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function CartDrawer() {
               Your bag is empty
             </h3>
             <p className="mt-1.5 max-w-xs text-xs font-medium leading-relaxed text-[#171717]/70 xl:text-[13px] xl:font-semibold xl:text-[#171717]/82">
-              Explore our waterproof 18K gold-plated necklaces, earrings, watches &amp; bespoke gift hampers.
+              Explore our everyday wear 18K gold-plated necklaces, earrings, watches &amp; bespoke gift hampers.
             </p>
             <button
               type="button"
