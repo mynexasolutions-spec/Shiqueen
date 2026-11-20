@@ -8,6 +8,14 @@ import { getSettings } from "@/lib/server/settings";
 import { quoteCart, sanitizeCart, type Quote } from "@/lib/server/pricing";
 import { sendAdminOrderNotification, sendOrderConfirmationEmail } from "@/lib/server/email";
 import { refreshStorefront } from "@/lib/server/revalidate";
+import {
+  getRazorpayClient,
+  getRazorpayKeyId,
+  isRazorpayConfigured,
+  markOrderPaid,
+  sendPaidOrderEmails,
+  verifyRazorpaySignature,
+} from "@/lib/server/razorpay";
 
 export interface CheckoutContext {
   user: { name: string; email: string; phone: string } | null;
@@ -27,6 +35,7 @@ export interface CheckoutContext {
     onlineDescription: string;
     onlineFee: number;
     onlineInstructions: string;
+    razorpayEnabled: boolean;
   };
 }
 
@@ -58,6 +67,7 @@ export async function getCheckoutContext(): Promise<CheckoutContext> {
       onlineDescription: settings.online_description,
       onlineFee: settings.online_fee,
       onlineInstructions: settings.online_instructions,
+      razorpayEnabled: isRazorpayConfigured(),
     },
   };
 }
@@ -94,7 +104,25 @@ export interface PlaceOrderInput {
 }
 
 export type PlaceOrderResult =
-  | { ok: true; orderNumber: string; total: number; paymentMethod: "prepaid" | "cod"; instructions: string }
+  | {
+      ok: true;
+      isRazorpay: false;
+      orderNumber: string;
+      total: number;
+      paymentMethod: "prepaid" | "cod";
+      instructions: string;
+    }
+  | {
+      ok: true;
+      isRazorpay: true;
+      orderId: string;
+      orderNumber: string;
+      total: number;
+      paymentMethod: "prepaid";
+      razorpayOrderId: string;
+      razorpayKeyId: string;
+      amount: number;
+    }
   | { ok: false; error: string; issues?: string[] };
 
 class CheckoutError extends Error {}
@@ -182,11 +210,75 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         if (!user.phone) await tx`update users set phone = ${phone} where id = ${user.id}`;
       }
 
-      return { orderNumber: order.order_number, quote };
+      return { orderId: order.id, orderNumber: order.order_number, quote };
     });
 
     // Stock levels changed → refresh storefront availability.
     refreshStorefront();
+
+    if (paymentMethod === "prepaid" && result.quote.total > 0) {
+      const razorpay = getRazorpayClient();
+      if (razorpay) {
+        try {
+          const rzpOrder = await razorpay.orders.create({
+            amount: Math.round(result.quote.total * 100),
+            currency: "INR",
+            receipt: result.orderNumber,
+            notes: {
+              internal_order_id: result.orderId,
+              order_number: result.orderNumber,
+            },
+          });
+
+          await sql`
+            update orders
+            set razorpay_order_id = ${rzpOrder.id}, updated_at = now()
+            where id = ${result.orderId}`;
+
+          return {
+            ok: true,
+            isRazorpay: true,
+            orderId: result.orderId,
+            orderNumber: result.orderNumber,
+            total: result.quote.total,
+            paymentMethod: "prepaid",
+            razorpayOrderId: rzpOrder.id,
+            razorpayKeyId: getRazorpayKeyId(),
+            amount: Number(rzpOrder.amount),
+          };
+        } catch (err) {
+          console.error("[checkout] Razorpay order creation failed", err);
+          // Roll back reserved stock/coupon and cancel the uninitiated order.
+          await sql.begin(async (tx) => {
+            for (const l of result.quote.lines) {
+              await tx`
+                update products
+                set stock = stock + ${l.quantity}, updated_at = now()
+                where id = ${l.productId} and track_inventory`;
+            }
+            if (result.quote.couponId) {
+              await tx`
+                update coupons
+                set used_count = greatest(0, used_count - 1)
+                where id = ${result.quote.couponId}`;
+            }
+            await tx`
+              update orders
+              set status = 'cancelled', payment_status = 'failed', updated_at = now()
+              where id = ${result.orderId}`;
+            await tx`
+              insert into order_status_history (order_id, status, note, created_by)
+              values (${result.orderId}, 'cancelled', 'Razorpay order initialization failed', ${user?.id ?? null})`;
+          }).catch((rollbackErr) => console.error("[checkout] rollback failed", rollbackErr));
+
+          refreshStorefront();
+          return {
+            ok: false,
+            error: "Could not start online payment right now. Please try again in a moment.",
+          };
+        }
+      }
+    }
 
     const emailData = {
       paymentLabel: paymentMethod === "cod" ? settings.cod_label : settings.online_label,
@@ -206,6 +298,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
 
     return {
       ok: true,
+      isRazorpay: false,
       orderNumber: result.orderNumber,
       total: result.quote.total,
       paymentMethod,
@@ -217,5 +310,58 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     }
     console.error("[checkout] placeOrder failed", err);
     return { ok: false, error: "Something went wrong while placing your order. Please try again." };
+  }
+}
+
+export interface VerifyRazorpayPaymentInput {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+  orderId: string;
+}
+
+export type VerifyRazorpayPaymentResult =
+  | { ok: true; orderNumber: string; razorpayPaymentId: string }
+  | { ok: false; error: string };
+
+export async function verifyRazorpayPayment(
+  input: VerifyRazorpayPaymentInput
+): Promise<VerifyRazorpayPaymentResult> {
+  const razorpayOrderId = String(input.razorpayOrderId ?? "").trim();
+  const razorpayPaymentId = String(input.razorpayPaymentId ?? "").trim();
+  const razorpaySignature = String(input.razorpaySignature ?? "").trim();
+  const orderId = String(input.orderId ?? "").trim();
+
+  if (!verifyRazorpaySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature)) {
+    return { ok: false, error: "Payment signature verification failed." };
+  }
+
+  try {
+    const res = await markOrderPaid({
+      orderId,
+      razorpayOrderId,
+      razorpayPaymentId,
+      source: "checkout",
+    });
+
+    if (!res.found || !res.orderNumber) {
+      return { ok: false, error: "Order not found for this payment." };
+    }
+
+    if (res.transitioned && res.emailData) {
+      const emailData = res.emailData;
+      after(async () => {
+        await sendPaidOrderEmails(emailData);
+      });
+    }
+
+    return {
+      ok: true,
+      orderNumber: res.orderNumber,
+      razorpayPaymentId: res.razorpayPaymentId || razorpayPaymentId,
+    };
+  } catch (err) {
+    console.error("[checkout] verifyRazorpayPayment failed", err);
+    return { ok: false, error: "Payment was received, but we could not verify it right now. Please contact support with your payment ID." };
   }
 }

@@ -60,6 +60,8 @@ export interface OrderDetail extends OrderListItem {
   courier: string;
   tracking_number: string;
   tracking_url: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
   customer_notes: string;
   admin_notes: string;
   updated_at: Date;
@@ -91,7 +93,8 @@ export async function loadOrder(id: string, ownerFilter?: { userId: string; emai
   const [o] = await sql<Omit<OrderDetail, "items" | "history" | "item_count">[]>`
     select id, order_number, user_id, customer_name, email::text as email, phone, shipping_address, mrp_total, subtotal,
            gift_wrap_total, prepaid_discount, coupon_code, coupon_discount, shipping_fee, payment_fee, total, payment_method,
-           payment_status, status, courier, tracking_number, tracking_url, customer_notes, admin_notes, created_at, updated_at
+           payment_status, status, courier, tracking_number, tracking_url, razorpay_order_id, razorpay_payment_id,
+           customer_notes, admin_notes, created_at, updated_at
     from orders where id = ${id}
     ${ownerFilter ? sql`and (user_id = ${ownerFilter.userId} or (email = ${ownerFilter.email} and ${ownerFilter.email} <> ''))` : sql``}`;
   if (!o) return null;

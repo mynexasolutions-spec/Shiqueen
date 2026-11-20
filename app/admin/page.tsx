@@ -5,6 +5,7 @@ import { getDashboardData } from "@/lib/server/admin/dashboard";
 import { Card, EmptyState, PageHeader } from "@/components/admin/ui";
 import { OrderStatusBadge } from "@/components/orders/StatusBadges";
 import RevenueChart from "@/components/admin/RevenueChart";
+import WelcomeBanner from "@/components/admin/WelcomeBanner";
 import { buttonClass } from "@/components/ui/button-class";
 import { formatDate, inr, type OrderStatus } from "@/lib/format";
 
@@ -25,14 +26,14 @@ function Delta({ now, prev, label }: { now: number; prev: number; label: string 
 function StatTile({ label, value, children, href }: { label: string; value: string; children?: React.ReactNode; href?: string }) {
   const body = (
     <>
-      <p className="text-base font-medium text-[#171717]/65">{label}</p>
-      <p className="mt-1.5 text-[34px] font-semibold leading-tight text-[#171717]">{value}</p>
+      <p className="text-[15px] font-medium tracking-[0.01em] text-[#625D52]">{label}</p>
+      <p className="mt-2 text-[34px] font-semibold leading-none tracking-[-0.035em] text-[#211F1B]">{value}</p>
       {children}
     </>
   );
-  const cls = "block rounded-2xl border border-[#E5DEC9] bg-white p-5 shadow-[0_1px_2px_rgba(23,23,23,0.04)] sm:p-6";
+  const cls = "relative block overflow-hidden rounded-2xl border border-[#E9E2D5] bg-white p-5 shadow-[0_8px_24px_rgba(65,49,20,0.045)] transition sm:p-5";
   return href ? (
-    <Link href={href} className={`${cls} transition hover:border-[#C59B27]`}>
+    <Link href={href} className={`${cls} hover:-translate-y-0.5 hover:border-[#D8C38F] hover:shadow-[0_12px_28px_rgba(65,49,20,0.08)]`}>
       {body}
     </Link>
   ) : (
@@ -49,6 +50,7 @@ export default async function AdminDashboard() {
 
   return (
     <>
+      <WelcomeBanner />
       <PageHeader
         title="Dashboard"
         description="Here's how your store is doing."

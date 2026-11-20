@@ -48,10 +48,12 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
               className={`flex h-12 items-center gap-3.5 rounded-xl px-4 text-[17px] font-medium transition ${
-                active ? "bg-[#171717] text-white" : "text-[#171717]/80 hover:bg-[#F3EEE4] hover:text-[#171717]"
+                active
+                  ? "border border-[#E7D7AC] bg-[#FBF5E8] text-[#171717] shadow-[inset_3px_0_0_#B58A2A]"
+                  : "text-[#171717]/75 hover:bg-[#F7F2E8] hover:text-[#171717]"
               }`}
             >
-              <Icon className={`h-5 w-5 shrink-0 ${active ? "text-[#E9C46A]" : "text-[#8C671A]"}`} aria-hidden="true" />
+              <Icon className={`h-5 w-5 shrink-0 ${active ? "text-[#9A741D]" : "text-[#8C671A]"}`} aria-hidden="true" />
               {label}
             </Link>
           </li>
@@ -111,9 +113,9 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }, [open]);
 
   return (
-    <div className="min-h-screen bg-[#F7F4EE] text-base text-[#171717]">
+    <div className="min-h-screen bg-[#F8F6F1] text-base text-[#171717]">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-[#E5DEC9] bg-white px-4 py-6 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-[#E9E2D5] bg-[#FFFEFC] px-4 py-6 lg:flex">
         <div className="px-2">
           <Brand />
         </div>

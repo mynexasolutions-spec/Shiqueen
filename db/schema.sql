@@ -271,3 +271,8 @@ alter table products drop column if exists review_count;
 
 -- Extra charge for the chosen payment method (e.g. a COD fee).
 alter table orders add column if not exists payment_fee integer not null default 0;
+
+-- Razorpay payment tracking on orders.
+alter table orders add column if not exists razorpay_order_id   text not null default '';
+alter table orders add column if not exists razorpay_payment_id text not null default '';
+create index if not exists orders_razorpay_order_idx on orders(razorpay_order_id) where razorpay_order_id <> '';

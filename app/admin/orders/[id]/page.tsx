@@ -104,6 +104,20 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </Card>
           <Card title="Payment">
             <PaymentForm id={order.id} paymentStatus={order.payment_status} />
+            {(order.razorpay_order_id || order.razorpay_payment_id) && (
+              <dl className="mt-4 divide-y divide-[#EFE8DD] border-t border-[#EFE8DD] pt-3 text-xs">
+                {order.razorpay_order_id && (
+                  <DetailRow label="Razorpay Order">
+                    <span className="font-mono select-all">{order.razorpay_order_id}</span>
+                  </DetailRow>
+                )}
+                {order.razorpay_payment_id && (
+                  <DetailRow label="Razorpay Payment">
+                    <span className="font-mono select-all">{order.razorpay_payment_id}</span>
+                  </DetailRow>
+                )}
+              </dl>
+            )}
           </Card>
           <Card title="Shipping & tracking">
             <ShippingForm id={order.id} courier={order.courier} trackingNumber={order.tracking_number} trackingUrl={order.tracking_url} />

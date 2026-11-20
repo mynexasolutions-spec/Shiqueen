@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { useEffect, useMemo, useState } from "react";
 import Header, { WhatsAppIcon } from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,9 +12,32 @@ import {
   getCheckoutContext,
   placeOrder,
   quoteCheckout,
+  verifyRazorpayPayment,
   type CheckoutContext,
   type PublicQuote,
 } from "./actions";
+
+interface RazorpaySuccessResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayFailedResponse {
+  error?: {
+    description?: string;
+    reason?: string;
+  };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: "payment.failed", cb: (res: RazorpayFailedResponse) => void) => void;
+}
+
+interface RazorpayWindow extends Window {
+  Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance;
+}
 
 export default function CheckoutPage() {
   const {
@@ -41,6 +65,7 @@ export default function CheckoutPage() {
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [orderPlacedId, setOrderPlacedId] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
   const [ctx, setCtx] = useState<CheckoutContext | null>(null);
   const [quote, setQuote] = useState<PublicQuote | null>(null);
   const [placing, setPlacing] = useState(false);
@@ -129,6 +154,78 @@ export default function CheckoutPage() {
     setAppliedCoupon(code || null);
   };
 
+  const openRazorpay = (res: {
+    orderId: string;
+    orderNumber: string;
+    razorpayOrderId: string;
+    razorpayKeyId: string;
+    amount: number;
+  }) => {
+    const RazorpayCtor = typeof window !== "undefined" ? (window as RazorpayWindow).Razorpay : undefined;
+    if (!RazorpayCtor) {
+      setPlacing(false);
+      setOrderError("Payment gateway is still loading — please wait a second and try again.");
+      return;
+    }
+
+    const rzp = new RazorpayCtor({
+      key: res.razorpayKeyId,
+      amount: res.amount,
+      currency: "INR",
+      name: "SHIQUEEN",
+      description: `Order ${res.orderNumber}`,
+      order_id: res.razorpayOrderId,
+      prefill: {
+        name: fullName,
+        email,
+        contact: phone,
+      },
+      notes: {
+        internal_order_id: res.orderId,
+        order_number: res.orderNumber,
+      },
+      theme: { color: "#8C671A" },
+      modal: {
+        ondismiss: () => {
+          setPlacing(false);
+          setOrderError("Payment was cancelled. You can try again whenever you're ready.");
+        },
+      },
+      handler: async (response: RazorpaySuccessResponse) => {
+        try {
+          const verified = await verifyRazorpayPayment({
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+            orderId: res.orderId,
+          });
+          if (verified.ok) {
+            setOrderPlacedId(verified.orderNumber);
+            setPaymentId(verified.razorpayPaymentId);
+            setInstructions("");
+            clearCart();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            setOrderError(verified.error);
+          }
+        } catch {
+          setOrderError(
+            "Payment was received, but we couldn't verify it right now. Please contact support on WhatsApp with your order number."
+          );
+        } finally {
+          setPlacing(false);
+        }
+      },
+    });
+
+    rzp.on("payment.failed", (failure: RazorpayFailedResponse) => {
+      setPlacing(false);
+      setOrderError(failure?.error?.description || "Payment failed. Please try again or choose another payment method.");
+    });
+
+    rzp.open();
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (placing) return;
@@ -149,23 +246,32 @@ export default function CheckoutPage() {
         pincode,
       });
       if (res.ok) {
+        if (res.isRazorpay) {
+          openRazorpay(res);
+          return;
+        }
         setOrderPlacedId(res.orderNumber);
+        setPaymentId(null);
         setInstructions(res.instructions);
         clearCart();
         window.scrollTo({ top: 0, behavior: "smooth" });
+        setPlacing(false);
       } else {
         setOrderError(res.error);
         setOrderIssues(res.issues ?? []);
+        setPlacing(false);
       }
     } catch {
       setOrderError("We couldn't reach the server. Please check your connection and try again.");
-    } finally {
       setPlacing(false);
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAF7F2] text-[#171717]">
+      {(onlineEnabled || ctx?.settings.razorpayEnabled) && (
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+      )}
       <Header />
 
       <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-8 sm:px-6 lg:px-12">
@@ -183,6 +289,11 @@ export default function CheckoutPage() {
             <p className="mt-2 text-xs leading-relaxed text-[#171717]/75 sm:text-sm">
               Your order <strong>{orderPlacedId}</strong> has been received. We&apos;ll share dispatch and tracking updates with you shortly.
             </p>
+            {paymentId && (
+              <p className="mt-2 text-xs text-[#171717]/65">
+                Payment ID: <span className="font-mono font-semibold text-[#111111] select-all">{paymentId}</span>
+              </p>
+            )}
             {instructions && (
               <div className="mx-auto mt-4 max-w-md whitespace-pre-line rounded-2xl border border-[#E5DEC9] bg-[#FBF7EE] p-4 text-left text-sm text-[#171717]">
                 <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#8C671A]">How to pay</p>

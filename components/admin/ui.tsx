@@ -44,9 +44,9 @@ export function Card({ title, description, actions, children, className, padded 
   padded?: boolean;
 }) {
   return (
-    <section className={cx("rounded-2xl border border-[#E5DEC9] bg-white shadow-[0_1px_2px_rgba(23,23,23,0.04)]", className)}>
+    <section className={cx("rounded-2xl border border-[#E9E2D5] bg-white shadow-[0_8px_24px_rgba(65,49,20,0.045)]", className)}>
       {(title || actions) && (
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#EFE8DD] px-5 py-4 sm:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#F0EBE2] px-5 py-4 sm:px-6">
           <div>
             {title && <h2 className="text-xl font-semibold text-[#171717]">{title}</h2>}
             {description && <p className="mt-0.5 text-[15px] text-[#171717]/65">{description}</p>}
