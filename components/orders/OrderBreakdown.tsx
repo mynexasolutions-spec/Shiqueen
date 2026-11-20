@@ -7,6 +7,7 @@ interface Item {
   id: string;
   product_name: string;
   product_slug: string;
+  product_sku?: string;
   image_url: string;
   finish: string;
   unit_price: number;
@@ -30,7 +31,17 @@ interface Totals {
 }
 
 /** Line items + price breakdown, used by both the admin and customer order pages. */
-export default function OrderBreakdown({ items, totals, linkProducts = true }: { items: Item[]; totals: Totals; linkProducts?: boolean }) {
+export default function OrderBreakdown({
+  items,
+  totals,
+  linkProducts = true,
+  showSku = false,
+}: {
+  items: Item[];
+  totals: Totals;
+  linkProducts?: boolean;
+  showSku?: boolean;
+}) {
   return (
     <div>
       <ul className="divide-y divide-[#EFE8DD]">
@@ -47,9 +58,16 @@ export default function OrderBreakdown({ items, totals, linkProducts = true }: {
               ) : (
                 <p className="text-[17px] font-semibold text-[#171717]">{i.product_name}</p>
               )}
-              <p className="mt-0.5 text-base text-[#171717]/65">
+              {showSku && (
+                <p className="mt-1 text-sm text-[#171717]/65">
+                  <span className="inline-flex items-center rounded-md border border-[#E5DEC9] bg-[#FAF7F2] px-2 py-0.5 font-mono text-xs font-medium text-[#5C4512]">
+                    SKU: {i.product_sku?.trim() || "—"}
+                  </span>
+                </p>
+              )}
+              <p className="mt-1 text-base text-[#171717]/65">
                 {i.finish && `${i.finish} · `}
-                {inr(i.unit_price)} × {i.quantity}
+                {inr(i.unit_price)} × Qty {i.quantity}
               </p>
               {i.gift_wrap && (
                 <p className="mt-1.5 flex items-start gap-1.5 text-[15px] text-[#8C671A]">

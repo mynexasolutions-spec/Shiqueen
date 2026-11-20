@@ -81,3 +81,15 @@ input:-webkit-autofill:focus {
   caret-color: #171717;
   transition: background-color 9999s ease-out 0s;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+  body {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -70,6 +70,7 @@ export interface OrderDetail extends OrderListItem {
     product_id: string | null;
     product_name: string;
     product_slug: string;
+    product_sku: string;
     image_url: string;
     finish: string;
     unit_price: number;
@@ -99,8 +100,13 @@ export async function loadOrder(id: string, ownerFilter?: { userId: string; emai
     ${ownerFilter ? sql`and (user_id = ${ownerFilter.userId} or (email = ${ownerFilter.email} and ${ownerFilter.email} <> ''))` : sql``}`;
   if (!o) return null;
   const items = await sql<OrderDetail["items"]>`
-    select id, product_id, product_name, product_slug, image_url, finish, unit_price, unit_mrp, quantity, gift_wrap, gift_message, line_total
-    from order_items where order_id = ${id} order by product_name`;
+    select oi.id, oi.product_id, oi.product_name, oi.product_slug,
+           coalesce(nullif(oi.product_sku, ''), p.sku, '') as product_sku,
+           oi.image_url, oi.finish, oi.unit_price, oi.unit_mrp, oi.quantity, oi.gift_wrap, oi.gift_message, oi.line_total
+    from order_items oi
+    left join products p on p.id = oi.product_id
+    where oi.order_id = ${id}
+    order by oi.product_name`;
   const history = await sql<OrderDetail["history"]>`
     select h.id, h.status, h.note, h.created_at, u.name as by_name
     from order_status_history h left join users u on u.id = h.created_by

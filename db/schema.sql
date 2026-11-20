@@ -276,3 +276,6 @@ alter table orders add column if not exists payment_fee integer not null default
 alter table orders add column if not exists razorpay_order_id   text not null default '';
 alter table orders add column if not exists razorpay_payment_id text not null default '';
 create index if not exists orders_razorpay_order_idx on orders(razorpay_order_id) where razorpay_order_id <> '';
+
+-- Snapshot of product SKU on each order line item.
+alter table order_items add column if not exists product_sku text not null default '';

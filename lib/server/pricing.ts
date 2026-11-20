@@ -14,6 +14,7 @@ export interface CartLineInput {
 export interface PricedLine extends CartLineInput {
   productId: string;
   name: string;
+  sku: string;
   image: string;
   unitPrice: number;
   unitMrp: number;
@@ -42,6 +43,7 @@ interface ProductRow {
   id: string;
   slug: string;
   name: string;
+  sku: string;
   price: number;
   compare_at_price: number;
   stock: number;
@@ -97,7 +99,7 @@ export async function quoteCart(
   const slugs = [...new Set(input.map((l) => l.slug))];
   const products = slugs.length
     ? await db<ProductRow[]>`
-        select p.id, p.slug, p.name, p.price, p.compare_at_price, p.stock, p.track_inventory,
+        select p.id, p.slug, p.name, p.sku, p.price, p.compare_at_price, p.stock, p.track_inventory,
                (select i.url from product_images i where i.product_id = p.id order by i.sort_order, i.created_at limit 1) as image
         from products p where p.status = 'active' and p.slug in ${db(slugs)}`
     : [];
@@ -122,6 +124,7 @@ export async function quoteCart(
       ...l,
       productId: p.id,
       name: p.name,
+      sku: p.sku ?? "",
       image: p.image ?? "",
       unitPrice: p.price,
       unitMrp: Math.max(p.compare_at_price, p.price),

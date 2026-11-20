@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
 import {
+  cancelUnpaidRazorpayOrder,
   getCheckoutContext,
   placeOrder,
   quoteCheckout,
@@ -16,6 +17,15 @@ import {
   type CheckoutContext,
   type PublicQuote,
 } from "./actions";
+
+interface PendingRazorpayOrder {
+  orderId: string;
+  orderNumber: string;
+  razorpayOrderId: string;
+  razorpayKeyId: string;
+  amount: number;
+  fingerprint: string;
+}
 
 interface RazorpaySuccessResponse {
   razorpay_payment_id: string;
@@ -71,6 +81,7 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [orderIssues, setOrderIssues] = useState<string[]>([]);
+  const [pendingRazorpay, setPendingRazorpay] = useState<PendingRazorpayOrder | null>(null);
 
   // Prefill from the signed-in customer's profile / saved address.
   useEffect(() => {
@@ -148,6 +159,27 @@ export default function CheckoutPage() {
     : Math.max(0, grandTotal + paymentFee - prepaidDiscount - couponDiscount);
   const couponApplied = Boolean(quote?.couponCode);
 
+  const checkoutFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        items: cartPayload,
+        coupon: couponApplied ? appliedCoupon ?? "" : "",
+        paymentMethod,
+        fullName: fullName.trim(),
+        phone: phone.replace(/[\s-]/g, ""),
+        email: email.trim().toLowerCase(),
+        address: address.trim(),
+        city: city.trim(),
+        state: stateName.trim(),
+        pincode: pincode.trim(),
+      }),
+    [cartPayload, couponApplied, appliedCoupon, paymentMethod, fullName, phone, email, address, city, stateName, pincode]
+  );
+
+  const canReusePendingRazorpay = Boolean(
+    pendingRazorpay && pendingRazorpay.fingerprint === checkoutFingerprint && paymentMethod === "prepaid"
+  );
+
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     const code = couponInput.trim().toUpperCase();
@@ -200,6 +232,7 @@ export default function CheckoutPage() {
             orderId: res.orderId,
           });
           if (verified.ok) {
+            setPendingRazorpay(null);
             setOrderPlacedId(verified.orderNumber);
             setPaymentId(verified.razorpayPaymentId);
             setInstructions("");
@@ -229,9 +262,36 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (placing) return;
+
+    // Ensure Razorpay checkout script is ready BEFORE creating an order on the server.
+    if (paymentMethod === "prepaid" && ctx?.settings.razorpayEnabled && finalPayable > 0) {
+      const RazorpayCtor = typeof window !== "undefined" ? (window as RazorpayWindow).Razorpay : undefined;
+      if (!RazorpayCtor) {
+        setOrderError("Payment gateway is still loading — please wait a second and try again.");
+        return;
+      }
+    }
+
     setPlacing(true);
     setOrderError(null);
     setOrderIssues([]);
+
+    // Reuse the existing unpaid Razorpay order if nothing changed (prevents duplicate orders & double stock deduction).
+    if (pendingRazorpay && pendingRazorpay.fingerprint === checkoutFingerprint && paymentMethod === "prepaid") {
+      openRazorpay(pendingRazorpay);
+      return;
+    }
+
+    // If the customer edited their cart/details or switched to COD after an unpaid attempt,
+    // cancel the previous unpaid draft order first so its reserved stock & coupon are released.
+    if (pendingRazorpay) {
+      await cancelUnpaidRazorpayOrder({
+        orderId: pendingRazorpay.orderId,
+        razorpayOrderId: pendingRazorpay.razorpayOrderId,
+      }).catch(() => {});
+      setPendingRazorpay(null);
+    }
+
     try {
       const res = await placeOrder({
         items: cartPayload,
@@ -247,7 +307,16 @@ export default function CheckoutPage() {
       });
       if (res.ok) {
         if (res.isRazorpay) {
-          openRazorpay(res);
+          const pending: PendingRazorpayOrder = {
+            orderId: res.orderId,
+            orderNumber: res.orderNumber,
+            razorpayOrderId: res.razorpayOrderId,
+            razorpayKeyId: res.razorpayKeyId,
+            amount: res.amount,
+            fingerprint: checkoutFingerprint,
+          };
+          setPendingRazorpay(pending);
+          openRazorpay(pending);
           return;
         }
         setOrderPlacedId(res.orderNumber);
@@ -551,7 +620,11 @@ export default function CheckoutPage() {
                 disabled={placing}
                 className="w-full rounded-full bg-[#111111] py-4 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-lg transition hover:bg-[#8C671A] disabled:cursor-wait disabled:opacity-70"
               >
-                {placing ? "Placing your order…" : `Complete Royal Order • ₹${finalPayable.toLocaleString("en-IN")}`}
+                {placing
+                  ? "Placing your order…"
+                  : canReusePendingRazorpay && pendingRazorpay
+                    ? `Retry Payment (${pendingRazorpay.orderNumber}) • ₹${finalPayable.toLocaleString("en-IN")}`
+                    : `Complete Royal Order • ₹${finalPayable.toLocaleString("en-IN")}`}
               </button>
             </form>
 

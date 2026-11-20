@@ -113,9 +113,9 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }, [open]);
 
   return (
-    <div className="min-h-screen bg-[#F8F6F1] text-base text-[#171717]">
+    <div className="min-h-screen bg-[#F8F6F1] text-base text-[#171717] print:bg-white">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-[#E9E2D5] bg-[#FFFEFC] px-4 py-6 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-[#E9E2D5] bg-[#FFFEFC] px-4 py-6 lg:flex print:hidden">
         <div className="px-2">
           <Brand />
         </div>
@@ -126,7 +126,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[#E5DEC9] bg-white/95 px-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[#E5DEC9] bg-white/95 px-4 backdrop-blur lg:hidden print:hidden">
         <Brand />
         <button
           type="button"
@@ -158,8 +158,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <main className="lg:pl-72">
-        <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">{children}</div>
+      <main className="lg:pl-72 print:pl-0">
+        <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10 print:max-w-none print:p-0">{children}</div>
       </main>
     </div>
   );

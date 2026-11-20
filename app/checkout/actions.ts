@@ -193,9 +193,9 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
 
       for (const l of quote.lines) {
         await tx`
-          insert into order_items (order_id, product_id, product_name, product_slug, image_url, finish, unit_price, unit_mrp,
+          insert into order_items (order_id, product_id, product_name, product_slug, product_sku, image_url, finish, unit_price, unit_mrp,
                                    quantity, gift_wrap, gift_message, line_total)
-          values (${order.id}, ${l.productId}, ${l.name}, ${l.slug}, ${l.image}, ${l.finish}, ${l.unitPrice}, ${l.unitMrp},
+          values (${order.id}, ${l.productId}, ${l.name}, ${l.slug}, ${l.sku}, ${l.image}, ${l.finish}, ${l.unitPrice}, ${l.unitMrp},
                   ${l.quantity}, ${l.giftWrap}, ${l.giftMessage}, ${l.lineTotal})`;
       }
       await tx`insert into order_status_history (order_id, status, note, created_by) values (${order.id}, 'pending', 'Order placed', ${user?.id ?? null})`;
@@ -364,4 +364,77 @@ export async function verifyRazorpayPayment(
     console.error("[checkout] verifyRazorpayPayment failed", err);
     return { ok: false, error: "Payment was received, but we could not verify it right now. Please contact support with your payment ID." };
   }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Cancels an unpaid pending Razorpay order (e.g. if the customer edits their cart/address
+ * or switches to COD after dismissing the payment popup) and restores reserved stock & coupon.
+ */
+export async function cancelUnpaidRazorpayOrder(input: {
+  orderId: string;
+  razorpayOrderId: string;
+}): Promise<{ cancelled: boolean }> {
+  const orderId = String(input.orderId ?? "").trim();
+  const razorpayOrderId = String(input.razorpayOrderId ?? "").trim();
+  if (!UUID_RE.test(orderId) || !razorpayOrderId) return { cancelled: false };
+
+  const user = await getCurrentUser();
+  let cancelled = false;
+
+  try {
+    await sql.begin(async (tx) => {
+      const [order] = await tx<{
+        id: string;
+        status: string;
+        payment_status: string;
+        payment_method: string;
+        coupon_code: string;
+      }[]>`
+        select id, status, payment_status, payment_method, coupon_code
+        from orders
+        where id = ${orderId} and razorpay_order_id = ${razorpayOrderId} and razorpay_order_id <> ''
+        for update`;
+
+      if (!order) return;
+      if (order.status !== "pending" || order.payment_method !== "prepaid") return;
+      if (order.payment_status !== "pending" && order.payment_status !== "failed") return;
+
+      await tx`
+        update orders
+        set status = 'cancelled', updated_at = now()
+        where id = ${order.id}`;
+
+      await tx`
+        update products p
+        set stock = p.stock + i.qty, updated_at = now()
+        from (
+          select product_id, sum(quantity)::int as qty
+          from order_items
+          where order_id = ${order.id} and product_id is not null
+          group by product_id
+        ) i
+        where p.id = i.product_id and p.track_inventory`;
+
+      if (order.coupon_code) {
+        await tx`
+          update coupons
+          set used_count = greatest(0, used_count - 1)
+          where code = ${order.coupon_code}`;
+      }
+
+      await tx`
+        insert into order_status_history (order_id, status, note, created_by)
+        values (${order.id}, 'cancelled', 'Cancelled before payment (checkout updated by customer)', ${user?.id ?? null})`;
+
+      cancelled = true;
+    });
+  } catch (err) {
+    console.error("[checkout] cancelUnpaidRazorpayOrder failed", err);
+    return { cancelled: false };
+  }
+
+  if (cancelled) refreshStorefront();
+  return { cancelled };
 }
