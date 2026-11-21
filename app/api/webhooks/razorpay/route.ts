@@ -6,6 +6,7 @@ import {
   sendPaidOrderEmails,
   verifyRazorpayWebhookSignature,
 } from "@/lib/server/razorpay";
+import { refreshStorefront } from "@/lib/server/revalidate";
 
 interface RazorpayWebhookPayload {
   event?: string;
@@ -65,17 +66,21 @@ export async function POST(request: Request) {
         if (!payment) break;
 
         const result = await markOrderPaid({
+          intentId: payment.notes?.checkout_intent_id,
           orderId: payment.notes?.internal_order_id || payment.notes?.order_id,
           razorpayOrderId: payment.order_id,
           razorpayPaymentId: payment.id,
           source: "webhook",
         });
 
-        if (result.transitioned && result.emailData) {
-          const emailData = result.emailData;
-          after(async () => {
-            await sendPaidOrderEmails(emailData);
-          });
+        if (result.transitioned) {
+          refreshStorefront();
+          if (result.emailData) {
+            const emailData = result.emailData;
+            after(async () => {
+              await sendPaidOrderEmails(emailData);
+            });
+          }
         }
         break;
       }
@@ -86,17 +91,21 @@ export async function POST(request: Request) {
         if (!orderEntity) break;
 
         const result = await markOrderPaid({
+          intentId: orderEntity.notes?.checkout_intent_id,
           orderId: orderEntity.notes?.internal_order_id || orderEntity.notes?.order_id || orderEntity.receipt,
           razorpayOrderId: orderEntity.id,
           razorpayPaymentId: paymentEntity?.id,
           source: "webhook",
         });
 
-        if (result.transitioned && result.emailData) {
-          const emailData = result.emailData;
-          after(async () => {
-            await sendPaidOrderEmails(emailData);
-          });
+        if (result.transitioned) {
+          refreshStorefront();
+          if (result.emailData) {
+            const emailData = result.emailData;
+            after(async () => {
+              await sendPaidOrderEmails(emailData);
+            });
+          }
         }
         break;
       }
@@ -106,6 +115,7 @@ export async function POST(request: Request) {
         if (!payment) break;
 
         await markOrderPaymentFailed({
+          intentId: payment.notes?.checkout_intent_id,
           orderId: payment.notes?.internal_order_id || payment.notes?.order_id,
           razorpayOrderId: payment.order_id,
           reason: payment.error_description || "Payment failed",

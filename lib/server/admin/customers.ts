@@ -20,8 +20,8 @@ export interface CustomerListItem {
 }
 
 const statsSelect = sql`
-  (select count(*)::int from orders o where o.user_id = u.id) as order_count,
-  (select coalesce(sum(o.total), 0)::int from orders o where o.user_id = u.id and o.status not in ('cancelled', 'returned')) as total_spent`;
+  (select count(*)::int from orders o where o.user_id = u.id and not (o.payment_method = 'prepaid' and o.razorpay_order_id <> '' and o.payment_status in ('pending', 'failed'))) as order_count,
+  (select coalesce(sum(o.total), 0)::int from orders o where o.user_id = u.id and o.status not in ('cancelled', 'returned') and not (o.payment_method = 'prepaid' and o.razorpay_order_id <> '' and o.payment_status in ('pending', 'failed'))) as total_spent`;
 
 export async function listCustomersAdmin(opts: { q?: string; role?: string; page?: number }) {
   await requireAdmin();

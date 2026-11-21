@@ -279,3 +279,34 @@ create index if not exists orders_razorpay_order_idx on orders(razorpay_order_id
 
 -- Snapshot of product SKU on each order line item.
 alter table order_items add column if not exists product_sku text not null default '';
+
+-- Pending Razorpay checkout intents (real orders are only created once payment succeeds).
+create table if not exists checkout_intents (
+  id                   uuid primary key default gen_random_uuid(),
+  razorpay_order_id    text not null unique,
+  user_id              uuid references users(id) on delete set null,
+  customer_name        text not null,
+  email                citext not null default '',
+  phone                text not null,
+  shipping_address     jsonb not null,
+  mrp_total            integer not null default 0,
+  subtotal             integer not null,
+  gift_wrap_total      integer not null default 0,
+  prepaid_discount     integer not null default 0,
+  coupon_id            uuid references coupons(id) on delete set null,
+  coupon_code          text not null default '',
+  coupon_discount      integer not null default 0,
+  shipping_fee         integer not null default 0,
+  payment_fee          integer not null default 0,
+  total                integer not null,
+  customer_notes       text not null default '',
+  items                jsonb not null default '[]'::jsonb,
+  status               text not null default 'pending' check (status in ('pending', 'completed', 'failed', 'cancelled')),
+  failure_reason       text not null default '',
+  order_id             uuid references orders(id) on delete set null,
+  razorpay_payment_id  text not null default '',
+  created_at           timestamptz not null default now(),
+  updated_at           timestamptz not null default now()
+);
+create index if not exists checkout_intents_status_idx on checkout_intents(status, created_at desc);
+alter table checkout_intents enable row level security;

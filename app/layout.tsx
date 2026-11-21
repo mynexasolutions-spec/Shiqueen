@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import CartDrawer from "@/components/CartDrawer";
+import WishlistDrawer from "@/components/WishlistDrawer";
 import { SiteProvider } from "@/components/site/SiteProvider";
 import { getPublicSite } from "@/lib/server/content";
 
@@ -32,8 +34,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-[#FAF7F2] text-[#171717] font-sans selection:bg-[#F7DFC2] selection:text-[#171717]">
         <SiteProvider site={site}>
           <CartProvider>
-            {children}
-            <CartDrawer />
+            <WishlistProvider>
+              {children}
+              <CartDrawer />
+              <WishlistDrawer />
+            </WishlistProvider>
           </CartProvider>
         </SiteProvider>
       </body>

@@ -8,6 +8,7 @@ import { splitHighlight } from "@/lib/site-types";
 import type { CatalogProduct } from "@/lib/collections-data";
 import { WhatsAppIcon } from "@/components/Header";
 import { useCart } from "@/context/CartContext";
+import WishlistButton from "@/components/WishlistButton";
 
 interface ProductShowcaseProps {
   products: CatalogProduct[];
@@ -186,6 +187,19 @@ export default function ProductShowcase({
                     fill
                     sizes="(min-width: 1536px) 22vw, (min-width: 1024px) 24vw, (min-width: 640px) 50vw, 50vw"
                     className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                  <WishlistButton
+                    product={{
+                      id: product.id,
+                      slug: product.slug,
+                      name: product.name,
+                      image: product.primaryImage,
+                      price: product.price,
+                      originalPrice: product.originalPrice,
+                      plating: product.plating,
+                      inStock: product.inStock,
+                    }}
+                    className="absolute top-2 right-2 z-10 sm:top-2.5 sm:right-2.5"
                   />
                 </Link>
 

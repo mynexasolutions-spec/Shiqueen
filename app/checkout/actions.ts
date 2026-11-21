@@ -1,5 +1,6 @@
 "use server";
 
+import crypto from "crypto";
 import { after } from "next/server";
 
 import { sql } from "@/lib/server/db";
@@ -15,6 +16,7 @@ import {
   markOrderPaid,
   sendPaidOrderEmails,
   verifyRazorpaySignature,
+  type CheckoutIntentItem,
 } from "@/lib/server/razorpay";
 
 export interface CheckoutContext {
@@ -115,8 +117,7 @@ export type PlaceOrderResult =
   | {
       ok: true;
       isRazorpay: true;
-      orderId: string;
-      orderNumber: string;
+      intentId: string;
       total: number;
       paymentMethod: "prepaid";
       razorpayOrderId: string;
@@ -152,7 +153,81 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   const cart = sanitizeCart(input.items);
   if (!cart.length) return { ok: false, error: "Your bag is empty." };
 
+  const shippingAddress = { full_name: fullName, phone, line1, line2: "", city, state, pincode };
+
   try {
+    // Razorpay prepaid flow: do NOT create an order or deduct stock yet.
+    // Store a pending checkout intent; the real order is created only after payment succeeds.
+    const razorpay = paymentMethod === "prepaid" ? getRazorpayClient() : null;
+    if (razorpay) {
+      const quote = await quoteCart(cart, String(input.couponCode ?? ""), paymentMethod, settings);
+      if (quote.issues.length) throw Object.assign(new CheckoutError("Some items in your bag need attention."), { issues: quote.issues });
+      if (!quote.lines.length) throw new CheckoutError("Your bag is empty.");
+      if (input.couponCode?.trim() && !quote.couponId) throw new CheckoutError(quote.couponMessage || "This coupon can't be applied.");
+
+      if (quote.total > 0) {
+        const intentId = crypto.randomUUID();
+        let rzpOrder: { id: string; amount: string | number };
+        try {
+          rzpOrder = await razorpay.orders.create({
+            amount: Math.round(quote.total * 100),
+            currency: "INR",
+            receipt: `intent_${intentId.slice(0, 12)}`,
+            notes: {
+              checkout_intent_id: intentId,
+            },
+          });
+        } catch (err) {
+          console.error("[checkout] Razorpay order creation failed", err);
+          return {
+            ok: false,
+            error: "Could not start online payment right now. Please try again in a moment.",
+          };
+        }
+
+        const intentItems: CheckoutIntentItem[] = quote.lines.map((l) => ({
+          productId: l.productId,
+          name: l.name,
+          slug: l.slug,
+          sku: l.sku,
+          image: l.image,
+          finish: l.finish,
+          unitPrice: l.unitPrice,
+          unitMrp: l.unitMrp,
+          quantity: l.quantity,
+          giftWrap: l.giftWrap,
+          giftMessage: l.giftMessage,
+          lineTotal: l.lineTotal,
+        }));
+
+        await sql`
+          insert into checkout_intents (
+            id, razorpay_order_id, user_id, customer_name, email, phone, shipping_address,
+            mrp_total, subtotal, gift_wrap_total, prepaid_discount,
+            coupon_id, coupon_code, coupon_discount, shipping_fee, payment_fee, total,
+            customer_notes, items
+          )
+          values (
+            ${intentId}, ${rzpOrder.id}, ${user?.id ?? null}, ${fullName}, ${email}, ${phone}, ${sql.json(shippingAddress)},
+            ${quote.mrpTotal}, ${quote.subtotal}, ${quote.giftWrapTotal}, ${quote.prepaidDiscount},
+            ${quote.couponId}, ${quote.couponCode}, ${quote.couponDiscount}, ${quote.shippingFee}, ${quote.paymentFee}, ${quote.total},
+            ${notes}, ${sql.json(intentItems)}
+          )`;
+
+        return {
+          ok: true,
+          isRazorpay: true,
+          intentId,
+          total: quote.total,
+          paymentMethod: "prepaid",
+          razorpayOrderId: rzpOrder.id,
+          razorpayKeyId: getRazorpayKeyId(),
+          amount: Number(rzpOrder.amount),
+        };
+      }
+    }
+
+    // Direct order creation (COD, manual online payment without Razorpay, or ₹0 fully discounted order).
     const result = await sql.begin(async (tx) => {
       const quote = await quoteCart(cart, String(input.couponCode ?? ""), paymentMethod, settings, tx);
       if (quote.issues.length) throw Object.assign(new CheckoutError("Some items in your bag need attention."), { issues: quote.issues });
@@ -182,7 +257,6 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         if (!used.length) throw new CheckoutError("This coupon has reached its usage limit.");
       }
 
-      const shippingAddress = { full_name: fullName, phone, line1, line2: "", city, state, pincode };
       const [order] = await tx<{ id: string; order_number: string }[]>`
         insert into orders (user_id, customer_name, email, phone, shipping_address, mrp_total, subtotal, gift_wrap_total,
                             prepaid_discount, coupon_code, coupon_discount, shipping_fee, payment_fee, total, payment_method, customer_notes)
@@ -215,70 +289,6 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
 
     // Stock levels changed → refresh storefront availability.
     refreshStorefront();
-
-    if (paymentMethod === "prepaid" && result.quote.total > 0) {
-      const razorpay = getRazorpayClient();
-      if (razorpay) {
-        try {
-          const rzpOrder = await razorpay.orders.create({
-            amount: Math.round(result.quote.total * 100),
-            currency: "INR",
-            receipt: result.orderNumber,
-            notes: {
-              internal_order_id: result.orderId,
-              order_number: result.orderNumber,
-            },
-          });
-
-          await sql`
-            update orders
-            set razorpay_order_id = ${rzpOrder.id}, updated_at = now()
-            where id = ${result.orderId}`;
-
-          return {
-            ok: true,
-            isRazorpay: true,
-            orderId: result.orderId,
-            orderNumber: result.orderNumber,
-            total: result.quote.total,
-            paymentMethod: "prepaid",
-            razorpayOrderId: rzpOrder.id,
-            razorpayKeyId: getRazorpayKeyId(),
-            amount: Number(rzpOrder.amount),
-          };
-        } catch (err) {
-          console.error("[checkout] Razorpay order creation failed", err);
-          // Roll back reserved stock/coupon and cancel the uninitiated order.
-          await sql.begin(async (tx) => {
-            for (const l of result.quote.lines) {
-              await tx`
-                update products
-                set stock = stock + ${l.quantity}, updated_at = now()
-                where id = ${l.productId} and track_inventory`;
-            }
-            if (result.quote.couponId) {
-              await tx`
-                update coupons
-                set used_count = greatest(0, used_count - 1)
-                where id = ${result.quote.couponId}`;
-            }
-            await tx`
-              update orders
-              set status = 'cancelled', payment_status = 'failed', updated_at = now()
-              where id = ${result.orderId}`;
-            await tx`
-              insert into order_status_history (order_id, status, note, created_by)
-              values (${result.orderId}, 'cancelled', 'Razorpay order initialization failed', ${user?.id ?? null})`;
-          }).catch((rollbackErr) => console.error("[checkout] rollback failed", rollbackErr));
-
-          refreshStorefront();
-          return {
-            ok: false,
-            error: "Could not start online payment right now. Please try again in a moment.",
-          };
-        }
-      }
-    }
 
     const emailData = {
       paymentLabel: paymentMethod === "cod" ? settings.cod_label : settings.online_label,
@@ -317,7 +327,8 @@ export interface VerifyRazorpayPaymentInput {
   razorpayOrderId: string;
   razorpayPaymentId: string;
   razorpaySignature: string;
-  orderId: string;
+  intentId?: string;
+  orderId?: string;
 }
 
 export type VerifyRazorpayPaymentResult =
@@ -330,6 +341,7 @@ export async function verifyRazorpayPayment(
   const razorpayOrderId = String(input.razorpayOrderId ?? "").trim();
   const razorpayPaymentId = String(input.razorpayPaymentId ?? "").trim();
   const razorpaySignature = String(input.razorpaySignature ?? "").trim();
+  const intentId = String(input.intentId ?? "").trim();
   const orderId = String(input.orderId ?? "").trim();
 
   if (!verifyRazorpaySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature)) {
@@ -338,7 +350,8 @@ export async function verifyRazorpayPayment(
 
   try {
     const res = await markOrderPaid({
-      orderId,
+      intentId: intentId || undefined,
+      orderId: orderId || undefined,
       razorpayOrderId,
       razorpayPaymentId,
       source: "checkout",
@@ -348,11 +361,14 @@ export async function verifyRazorpayPayment(
       return { ok: false, error: "Order not found for this payment." };
     }
 
-    if (res.transitioned && res.emailData) {
-      const emailData = res.emailData;
-      after(async () => {
-        await sendPaidOrderEmails(emailData);
-      });
+    if (res.transitioned) {
+      refreshStorefront();
+      if (res.emailData) {
+        const emailData = res.emailData;
+        after(async () => {
+          await sendPaidOrderEmails(emailData);
+        });
+      }
     }
 
     return {
@@ -369,72 +385,30 @@ export async function verifyRazorpayPayment(
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Cancels an unpaid pending Razorpay order (e.g. if the customer edits their cart/address
- * or switches to COD after dismissing the payment popup) and restores reserved stock & coupon.
+ * Marks a pending Razorpay checkout intent as cancelled (e.g. if the customer edits
+ * their cart/address or switches to COD after dismissing the payment popup).
+ * No order was created and no stock/coupon was deducted.
  */
 export async function cancelUnpaidRazorpayOrder(input: {
-  orderId: string;
+  intentId: string;
   razorpayOrderId: string;
 }): Promise<{ cancelled: boolean }> {
-  const orderId = String(input.orderId ?? "").trim();
+  const intentId = String(input.intentId ?? "").trim();
   const razorpayOrderId = String(input.razorpayOrderId ?? "").trim();
-  if (!UUID_RE.test(orderId) || !razorpayOrderId) return { cancelled: false };
-
-  const user = await getCurrentUser();
-  let cancelled = false;
+  if (!UUID_RE.test(intentId) || !razorpayOrderId) return { cancelled: false };
 
   try {
-    await sql.begin(async (tx) => {
-      const [order] = await tx<{
-        id: string;
-        status: string;
-        payment_status: string;
-        payment_method: string;
-        coupon_code: string;
-      }[]>`
-        select id, status, payment_status, payment_method, coupon_code
-        from orders
-        where id = ${orderId} and razorpay_order_id = ${razorpayOrderId} and razorpay_order_id <> ''
-        for update`;
-
-      if (!order) return;
-      if (order.status !== "pending" || order.payment_method !== "prepaid") return;
-      if (order.payment_status !== "pending" && order.payment_status !== "failed") return;
-
-      await tx`
-        update orders
-        set status = 'cancelled', updated_at = now()
-        where id = ${order.id}`;
-
-      await tx`
-        update products p
-        set stock = p.stock + i.qty, updated_at = now()
-        from (
-          select product_id, sum(quantity)::int as qty
-          from order_items
-          where order_id = ${order.id} and product_id is not null
-          group by product_id
-        ) i
-        where p.id = i.product_id and p.track_inventory`;
-
-      if (order.coupon_code) {
-        await tx`
-          update coupons
-          set used_count = greatest(0, used_count - 1)
-          where code = ${order.coupon_code}`;
-      }
-
-      await tx`
-        insert into order_status_history (order_id, status, note, created_by)
-        values (${order.id}, 'cancelled', 'Cancelled before payment (checkout updated by customer)', ${user?.id ?? null})`;
-
-      cancelled = true;
-    });
+    const updated = await sql<{ id: string }[]>`
+      update checkout_intents
+      set status = 'cancelled', updated_at = now()
+      where id = ${intentId}
+        and razorpay_order_id = ${razorpayOrderId}
+        and status = 'pending'
+        and order_id is null
+      returning id`;
+    return { cancelled: updated.length > 0 };
   } catch (err) {
     console.error("[checkout] cancelUnpaidRazorpayOrder failed", err);
     return { cancelled: false };
   }
-
-  if (cancelled) refreshStorefront();
-  return { cancelled };
 }

@@ -3,7 +3,8 @@ import { sql } from "../db";
 import { requireAdmin } from "../session";
 import { getSettings } from "../settings";
 
-const COUNTED = sql`status not in ('cancelled', 'returned')`;
+const VALID_ORDER = sql`not (payment_method = 'prepaid' and razorpay_order_id <> '' and payment_status in ('pending', 'failed'))`;
+const COUNTED = sql`status not in ('cancelled', 'returned') and ${VALID_ORDER}`;
 
 export async function getDashboardData() {
   await requireAdmin();
@@ -24,10 +25,10 @@ export async function getDashboardData() {
     select
       (select coalesce(sum(total), 0)::int from orders where ${COUNTED} and created_at >= now() - interval '30 days') as revenue_30,
       (select coalesce(sum(total), 0)::int from orders where ${COUNTED} and created_at >= now() - interval '60 days' and created_at < now() - interval '30 days') as revenue_prev_30,
-      (select count(*)::int from orders where created_at >= now() - interval '30 days') as orders_30,
-      (select count(*)::int from orders where created_at >= now() - interval '60 days' and created_at < now() - interval '30 days') as orders_prev_30,
-      (select count(*)::int from orders where status = 'pending') as pending,
-      (select count(*)::int from orders where status in ('confirmed', 'processing')) as to_ship,
+      (select count(*)::int from orders where ${VALID_ORDER} and created_at >= now() - interval '30 days') as orders_30,
+      (select count(*)::int from orders where ${VALID_ORDER} and created_at >= now() - interval '60 days' and created_at < now() - interval '30 days') as orders_prev_30,
+      (select count(*)::int from orders where ${VALID_ORDER} and status = 'pending') as pending,
+      (select count(*)::int from orders where ${VALID_ORDER} and status in ('confirmed', 'processing')) as to_ship,
       (select count(*)::int from users where role = 'customer') as customers,
       (select count(*)::int from users where role = 'customer' and created_at >= now() - interval '30 days') as customers_30`;
 
@@ -41,11 +42,12 @@ export async function getDashboardData() {
            count(o.id)::int as orders
     from days d
     left join orders o on (o.created_at at time zone 'Asia/Kolkata')::date = d.day
+      and not (o.payment_method = 'prepaid' and o.razorpay_order_id <> '' and o.payment_status in ('pending', 'failed'))
     group by d.day order by d.day`;
 
   const recentOrders = await sql<
     { id: string; order_number: string; customer_name: string; total: number; status: string; created_at: Date }[]
-  >`select id, order_number, customer_name, total, status, created_at from orders order by created_at desc limit 6`;
+  >`select id, order_number, customer_name, total, status, created_at from orders where ${VALID_ORDER} order by created_at desc limit 6`;
 
   const lowStock = await sql<{ id: string; name: string; stock: number }[]>`
     select id, name, stock from products

@@ -15,6 +15,7 @@ import type { PublicReview } from "@/lib/site-types";
 import ReviewsSection from "./ReviewsSection";
 import { WhatsAppIcon } from "@/components/Header";
 import ProductCard from "@/components/collection/ProductCard";
+import WishlistButton from "@/components/WishlistButton";
 
 interface ProductDetailViewProps {
   product: CatalogProduct;
@@ -657,6 +658,21 @@ export default function ProductDetailView({
                   fetchPriority="high"
                   onClick={() => setZoomModalIndex(activeImageIndex)}
                   className="cursor-zoom-in object-cover object-center transition-all duration-500"
+                />
+
+                {/* Wishlist Heart Button in Top-Right */}
+                <WishlistButton
+                  product={{
+                    id: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    image: product.primaryImage,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    plating: selectedFinish,
+                    inStock: product.inStock,
+                  }}
+                  className="absolute top-3.5 right-3.5 z-10 !h-10 !w-10 shadow-md sm:top-4 sm:right-4 xl:!h-11 xl:!w-11"
                 />
 
                 {/* Subtle Zoom Trigger Button in Bottom-Right */}

@@ -14,7 +14,8 @@ export async function getMyOrders(limit = 50) {
            (select coalesce(sum(quantity), 0)::int from order_items i where i.order_id = o.id) as item_count,
            (select i.image_url from order_items i where i.order_id = o.id limit 1) as first_image
     from orders o
-    where o.user_id = ${user.id} or o.email = ${user.email}
+    where (o.user_id = ${user.id} or o.email = ${user.email})
+      and not (o.payment_method = 'prepaid' and o.razorpay_order_id <> '' and o.payment_status in ('pending', 'failed'))
     order by o.created_at desc limit ${limit}`;
   return rows.map((r) => ({ ...r }));
 }

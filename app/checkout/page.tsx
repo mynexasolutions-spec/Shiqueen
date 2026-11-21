@@ -19,8 +19,7 @@ import {
 } from "./actions";
 
 interface PendingRazorpayOrder {
-  orderId: string;
-  orderNumber: string;
+  intentId: string;
   razorpayOrderId: string;
   razorpayKeyId: string;
   amount: number;
@@ -187,8 +186,7 @@ export default function CheckoutPage() {
   };
 
   const openRazorpay = (res: {
-    orderId: string;
-    orderNumber: string;
+    intentId: string;
     razorpayOrderId: string;
     razorpayKeyId: string;
     amount: number;
@@ -205,7 +203,7 @@ export default function CheckoutPage() {
       amount: res.amount,
       currency: "INR",
       name: "SHIQUEEN",
-      description: `Order ${res.orderNumber}`,
+      description: "SHIQUEEN Order",
       order_id: res.razorpayOrderId,
       prefill: {
         name: fullName,
@@ -213,14 +211,13 @@ export default function CheckoutPage() {
         contact: phone,
       },
       notes: {
-        internal_order_id: res.orderId,
-        order_number: res.orderNumber,
+        checkout_intent_id: res.intentId,
       },
       theme: { color: "#8C671A" },
       modal: {
         ondismiss: () => {
           setPlacing(false);
-          setOrderError("Payment was cancelled. You can try again whenever you're ready.");
+          setOrderError("Payment was cancelled. No order was placed — you can try again whenever you're ready.");
         },
       },
       handler: async (response: RazorpaySuccessResponse) => {
@@ -229,7 +226,7 @@ export default function CheckoutPage() {
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
-            orderId: res.orderId,
+            intentId: res.intentId,
           });
           if (verified.ok) {
             setPendingRazorpay(null);
@@ -243,7 +240,7 @@ export default function CheckoutPage() {
           }
         } catch {
           setOrderError(
-            "Payment was received, but we couldn't verify it right now. Please contact support on WhatsApp with your order number."
+            "Payment was received, but we couldn't verify it right now. Please contact support on WhatsApp with your payment ID."
           );
         } finally {
           setPlacing(false);
@@ -253,7 +250,9 @@ export default function CheckoutPage() {
 
     rzp.on("payment.failed", (failure: RazorpayFailedResponse) => {
       setPlacing(false);
-      setOrderError(failure?.error?.description || "Payment failed. Please try again or choose another payment method.");
+      setOrderError(
+        failure?.error?.description || "Payment failed. No order was placed — please try again or choose another payment method."
+      );
     });
 
     rzp.open();
@@ -263,7 +262,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (placing) return;
 
-    // Ensure Razorpay checkout script is ready BEFORE creating an order on the server.
+    // Ensure Razorpay checkout script is ready BEFORE creating a checkout intent on the server.
     if (paymentMethod === "prepaid" && ctx?.settings.razorpayEnabled && finalPayable > 0) {
       const RazorpayCtor = typeof window !== "undefined" ? (window as RazorpayWindow).Razorpay : undefined;
       if (!RazorpayCtor) {
@@ -276,17 +275,17 @@ export default function CheckoutPage() {
     setOrderError(null);
     setOrderIssues([]);
 
-    // Reuse the existing unpaid Razorpay order if nothing changed (prevents duplicate orders & double stock deduction).
+    // Reuse the existing pending Razorpay intent if nothing changed.
     if (pendingRazorpay && pendingRazorpay.fingerprint === checkoutFingerprint && paymentMethod === "prepaid") {
       openRazorpay(pendingRazorpay);
       return;
     }
 
     // If the customer edited their cart/details or switched to COD after an unpaid attempt,
-    // cancel the previous unpaid draft order first so its reserved stock & coupon are released.
+    // mark the previous checkout intent as cancelled cleanly.
     if (pendingRazorpay) {
       await cancelUnpaidRazorpayOrder({
-        orderId: pendingRazorpay.orderId,
+        intentId: pendingRazorpay.intentId,
         razorpayOrderId: pendingRazorpay.razorpayOrderId,
       }).catch(() => {});
       setPendingRazorpay(null);
@@ -308,8 +307,7 @@ export default function CheckoutPage() {
       if (res.ok) {
         if (res.isRazorpay) {
           const pending: PendingRazorpayOrder = {
-            orderId: res.orderId,
-            orderNumber: res.orderNumber,
+            intentId: res.intentId,
             razorpayOrderId: res.razorpayOrderId,
             razorpayKeyId: res.razorpayKeyId,
             amount: res.amount,
@@ -623,7 +621,7 @@ export default function CheckoutPage() {
                 {placing
                   ? "Placing your order…"
                   : canReusePendingRazorpay && pendingRazorpay
-                    ? `Retry Payment (${pendingRazorpay.orderNumber}) • ₹${finalPayable.toLocaleString("en-IN")}`
+                    ? `Retry Payment • ₹${finalPayable.toLocaleString("en-IN")}`
                     : `Complete Royal Order • ₹${finalPayable.toLocaleString("en-IN")}`}
               </button>
             </form>

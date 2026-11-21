@@ -29,7 +29,7 @@ export async function listOrdersAdmin(opts: { q?: string; status?: string; payme
   const like = `%${q.replace(/[%_\\]/g, (m) => `\\${m}`)}%`;
 
   const where = sql`
-    where true
+    where not (o.payment_method = 'prepaid' and o.razorpay_order_id <> '' and o.payment_status in ('pending', 'failed'))
     ${q ? sql`and (o.order_number ilike ${like} or o.customer_name ilike ${like} or o.email::text ilike ${like} or o.phone ilike ${like})` : sql``}
     ${status ? sql`and o.status = ${status}` : sql``}
     ${payment ? sql`and o.payment_status = ${payment}` : sql``}

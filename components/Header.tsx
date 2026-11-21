@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useSite, useWhatsApp } from "@/components/site/SiteProvider";
 
 type AnnouncementItem = { icon: string; text: string };
@@ -151,6 +152,7 @@ function AnnouncementIcon({ icon }: { icon: AnnouncementItem["icon"] }) {
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openDrawer, totalItems } = useCart();
+  const { openDrawer: openWishlistDrawer, totalItems: wishlistCount } = useWishlist();
   const { content } = useSite();
   const whatsapp = useWhatsApp();
   const BRAND = content.brand;
@@ -288,72 +290,81 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right Actions: Desktop Cart Drawer Trigger (lg+) + Mobile Menu Trigger (<lg) */}
-          <div className="flex items-center gap-2.5">
+          {/* Right Actions: Minimal Luxury Icons (Wishlist, Account, Bag, Mobile Menu) */}
+          <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+            <button
+              type="button"
+              onClick={openWishlistDrawer}
+              title="Wishlist"
+              aria-label={`Open wishlist (${wishlistCount} items)`}
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#171717] transition hover:bg-[#EFE8DC]/70 hover:text-[#8C671A] active:scale-95"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill={wishlistCount > 0 ? "#B58924" : "none"}
+                stroke={wishlistCount > 0 ? "#B58924" : "currentColor"}
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-[21px] w-[21px]"
+                aria-hidden="true"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#171717] px-1 text-[9px] font-bold text-[#FAF6EE] ring-2 ring-[#FAF6EE]">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+
             <Link
               href="/account"
+              title="Account"
               aria-label="My account"
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-[#E5DEC9] bg-white px-3 text-xs font-semibold text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:px-4 xl:text-[13px]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#171717] transition hover:bg-[#EFE8DC]/70 hover:text-[#8C671A] active:scale-95"
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="1.75"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-4 w-4 text-[#8C671A]"
+                className="h-[21px] w-[21px]"
                 aria-hidden="true"
               >
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
-              <span className="hidden lg:inline">Account</span>
             </Link>
+
             <button
               type="button"
               onClick={openDrawer}
+              title="Shopping Bag"
               aria-label={`Open shopping bag (${totalItems} items)`}
-              className="relative hidden h-10 items-center gap-2 rounded-full border border-[#E5DEC9] bg-white px-4 text-xs font-semibold text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:inline-flex xl:text-[13px]"
+              className="relative hidden h-10 w-10 items-center justify-center rounded-full text-[#171717] transition hover:bg-[#EFE8DC]/70 hover:text-[#8C671A] active:scale-95 lg:inline-flex"
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="1.75"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-4 w-4 text-[#8C671A]"
+                className="h-[21px] w-[21px]"
                 aria-hidden="true"
               >
                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
-              <span>Bag</span>
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#171717] px-1.5 text-[10px] font-bold text-[#FAF6EE]">
-                {totalItems}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#E5DEC9] bg-white text-[#171717] shadow-xs transition hover:border-[#C59B27] active:scale-95 lg:hidden"
-              aria-label="Open navigation menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <line x1="4" x2="20" y1="7" y2="7" />
-                <line x1="4" x2="20" y1="12" y2="12" />
-                <line x1="4" x2="15" y1="17" y2="17" />
-              </svg>
+              {totalItems > 0 && (
+                <span className="absolute top-1 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#171717] px-1 text-[9px] font-bold text-[#FAF6EE] ring-2 ring-[#FAF6EE]">
+                  {totalItems}
+                </span>
+              )}
             </button>
           </div>
         </div>
